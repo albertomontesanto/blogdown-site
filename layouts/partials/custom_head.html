@@ -1,0 +1,8 @@
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var brand = document.querySelector('a.navbar-brand, .navbar .navbar-brand');
+    if (brand) {
+      brand.setAttribute('href', '{{ "/author/admin/" | relURL }}');
+    }
+  });
+</script>

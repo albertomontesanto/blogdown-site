@@ -1,0 +1,5 @@
+/* Rende il brand in alto non cliccabile */
+.navbar-brand {
+  pointer-events: none;
+  cursor: default;
+}
