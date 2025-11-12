@@ -1,10 +1,9 @@
 [build]
-  command = "hugo --minify -b $DEPLOY_PRIME_URL"
+  command = "hugo --minify"
   publish = "public"
 
 [build.environment]
-  # Versione di Hugo che usi in locale (quella che hai installato con brew)
-  HUGO_VERSION = "0.128.2"
+  HUGO_VERSION = "0.115.0"
 
 [[redirects]]
   from = "/"
