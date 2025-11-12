@@ -8,8 +8,8 @@ main:
   - name: Teaching
     url: /courses/
     weight: 30
-  - name: Contact
-    url: /contact/
+  - name: Genealogy
+    url: /genealogy/
     weight: 40
   - name: Projects
     url: /project/
@@ -17,3 +17,6 @@ main:
   - name: Visualizations
     url: /visualizations/
     weight: 60
+      - name: Contact
+    url: /contact/
+    weight: t0
