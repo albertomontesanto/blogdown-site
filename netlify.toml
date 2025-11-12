@@ -1,5 +1,5 @@
 [build]
-  command = "hugo --minify -b $DEPLOY_PRIME_URL"
+  command = "hugo --minify"
   publish = "public"
 
 [[redirects]]
