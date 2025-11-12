@@ -19,4 +19,4 @@ main:
     weight: 60
       - name: Contact
     url: /contact/
-    weight: t0
+    weight: 70
