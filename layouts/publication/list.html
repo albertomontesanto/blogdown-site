@@ -1,0 +1,81 @@
+{{ define "main" }}
+<div class="container my-4">
+  <h1 class="mb-3">{{ .Title }}</h1>
+
+  <!-- Barra di ricerca + filtro anno -->
+  <div class="row mb-4">
+    <div class="col-md-8 mb-2">
+      <input id="pub-search" class="form-control"
+             type="search"
+             placeholder="Search publications (title, authors, journal)...">
+    </div>
+    <div class="col-md-4 mb-2">
+      <select id="pub-year-filter" class="form-control">
+        <option value="all">All years</option>
+        {{/* costruiamo le opzioni anno dai contenuti */}}
+        {{ range .Pages.ByDate.Reverse.GroupByDate "2006" }}
+          <option value="{{ .Key }}">{{ .Key }}</option>
+        {{ end }}
+      </select>
+    </div>
+  </div>
+
+  <!-- Elenco delle pubblicazioni -->
+  <div id="pub-list">
+    {{ range .Pages.ByDate.Reverse }}
+      {{ $year := .Date | time.Format "2006" }}
+      {{ $authors := delimit (.Params.authors | default slice) ", " }}
+      {{ $summary := .Params.summary | default "" }}
+      {{ $journal := .Params.publication | default "" }}
+
+      <article class="pub-item mb-3"
+               data-year="{{ $year }}"
+               data-search="{{ lower (printf "%s %s %s %s" .Title $authors $journal $summary) }}">
+        <div class="card p-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h5 class="mb-1">
+                <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+              </h5>
+              <div class="small text-muted">
+                {{- if $authors }}{{ $authors }} · {{ end -}}
+                {{- if $journal }}{{ $journal }} · {{ end -}}
+                {{ $year }}
+              </div>
+              {{ if $summary }}
+                <p class="mt-2 mb-0">{{ $summary }}</p>
+              {{ end }}
+            </div>
+          </div>
+        </div>
+      </article>
+    {{ end }}
+  </div>
+</div>
+
+<!-- JS per ricerca + filtro per anno -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var searchInput = document.getElementById('pub-search');
+  var yearSelect = document.getElementById('pub-year-filter');
+  var items = Array.prototype.slice.call(document.querySelectorAll('.pub-item'));
+
+  function applyFilters() {
+    var q = (searchInput.value || '').toLowerCase();
+    var year = yearSelect.value || 'all';
+
+    items.forEach(function (item) {
+      var haystack = item.getAttribute('data-search') || '';
+      var itemYear = item.getAttribute('data-year') || '';
+      var matchText = !q || haystack.indexOf(q) !== -1;
+      var matchYear = (year === 'all') || (year === itemYear);
+
+      item.style.display = (matchText && matchYear) ? '' : 'none';
+    });
+  }
+
+  if (searchInput) searchInput.addEventListener('input', applyFilters);
+  if (yearSelect) yearSelect.addEventListener('change', applyFilters);
+});
+</script>
+{{ end }}
