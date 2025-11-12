@@ -2,6 +2,9 @@
 title: "Alberto Montesanto"
 slug: "admin"
 url: "/author/admin/"   # forza l'URL esatto
+aliases:
+  - /
+  - /index.html
 draft: false
 
   
