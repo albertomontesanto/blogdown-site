@@ -1,7 +1,10 @@
 ---
-# Display name
-name: Alberto Montesanto
+title: "Alberto Montesanto"
+slug: "admin"
+url: "/author/admin/"   # forza l'URL esatto
+draft: false
 
+  
 bio:
 
 education:
