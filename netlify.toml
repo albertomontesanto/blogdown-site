@@ -11,3 +11,9 @@
   to = "/author/admin/"
   status = 301
   force = true
+  
+[[redirects]]
+  from = "/%7B%7B"
+  to = "/author/admin/"
+  status = 301
+  force = true
