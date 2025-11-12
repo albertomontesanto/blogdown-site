@@ -1,0 +1,15 @@
+headers:
+  mediaType: text/netlify
+  baseName: _headers
+  isPlainText: true
+  notAlternative: true
+redirects:
+  mediaType: text/netlify
+  baseName: _redirects
+  isPlainText: true
+  notAlternative: true
+wowchemycms_config:
+  mediaType: application/yaml
+  baseName: config
+  isPlainText: true
+  notAlternative: true

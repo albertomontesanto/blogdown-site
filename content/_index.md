@@ -1,5 +1,5 @@
 ---
-summary: null
-title: null
-type: widget_page
+title: "Home"
+type: page
 ---
+Benvenuto!

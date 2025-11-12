@@ -1,0 +1,5 @@
+text/netlify:
+  suffixes: [""]
+  delimiter: ""
+application/yaml:
+  suffixes: ["yaml","yml"]

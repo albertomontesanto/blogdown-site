@@ -20,7 +20,7 @@ authors:
 - Montesanto A
 
 date: '2025-02-14'
-10.1016/j.forsciint.2025.112409
+doi:  https://doi.org/10.1016/j.forsciint.2025.112409
 featured: false
 # To use the `image` argument, add an image named `featured.jpg/png` to your page's folder.
 # focal_point: Smart, Center, TopLeft, Top, TopRight, Left, Right, BottomLeft, Bottom, BottomRight.
@@ -33,7 +33,7 @@ projects: []
 publication: '*Forensic Sci Int.*'
 publication_types:
 - 2
-publishDate: '2025-02-14'
+
 slides: ''
 summary: ''
 # `tags` are like keywords

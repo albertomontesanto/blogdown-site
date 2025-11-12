@@ -1,7 +1,5 @@
 ---
 title: "Pangenomics: A new era in the field of neurodegenerative diseases"
-date: 2023-12-30
-publishDate: 2021-01-05T20:13:52.623034Z
 authors: 
 - Abondio P
 - Bruno F

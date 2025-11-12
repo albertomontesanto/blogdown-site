@@ -1,7 +1,6 @@
 ---
 title: "Clinical Implications of Estimating Glomerular Filtration Rate in Institutionalized Older People"
-date: 2021-01-28
-publishDate: 2021-01-05T20:13:52.623034Z
+
 authors: 
 - Paparazzo E
 - Geracitano S

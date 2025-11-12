@@ -149,3 +149,6 @@ cms:
 icon:
   pack:
     ai: true
+params:
+  analytics:
+    google: ""

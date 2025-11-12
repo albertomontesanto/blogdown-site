@@ -1,0 +1,12 @@
+{{/* Local override: use GA4 via params.analytics.google; do NOT touch .Site.GoogleAnalytics */}}
+{{ $ga := site.Params.analytics.google | default "" }}
+{{ if $ga }}
+  <!-- Google Analytics 4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ $ga }}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '{{ $ga }}');
+  </script>
+{{ end }}

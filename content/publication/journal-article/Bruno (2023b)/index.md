@@ -1,7 +1,6 @@
 ---
 title: "The Nerve Growth Factor Receptor (NGFR/p75NTR): A Major Player in Alzheimer’s Disease"
-date: 2023-02-24
-publishDate: 2021-01-05T20:13:52.623034Z
+
 authors: 
 - Bruno, F
 - Abondio, P
@@ -13,7 +12,6 @@ authors:
 
 
 
-date: '2023-02-24'
 doi: https://doi.org/10.3390/ijms24043200
 featured: false
 # To use the `image` argument, add an image named `featured.jpg/png` to your page's folder.
@@ -27,7 +25,7 @@ projects: []
 publication: '*International Journal of Molecular Sciences*'
 publication_types:
 - 2
-publishDate: '2023-02-24'
+
 slides: ''
 summary: ''
 # `tags` are like keywords
