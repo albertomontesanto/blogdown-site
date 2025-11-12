@@ -11,6 +11,9 @@ main:
   - name: Contact
     url: /contact/
     weight: 40
-  - name: CV
-    url: /author/admin/
+  - name: Projects
+    url: /projects/
     weight: 50
+  - name: Visualizations
+    url: /visualizations/
+    weight: 60
