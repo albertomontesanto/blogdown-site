@@ -7,7 +7,7 @@ type: page
 ---
 
 <div class="hero text-center py-5">
-  <h2 class="display-4 fw-bold">Genealogy & Historical Demography</h1>
+  <h2 class="display-4 fw-bold">Genealogy & Historical Demography</h2>
   <p class="lead">Building modern digital archives and reconstructing family histories across Southern Italy.</p>
 </div>
 
