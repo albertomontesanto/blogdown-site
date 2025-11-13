@@ -1,6 +1,6 @@
 ---
-title: "Genealogy"
-subtitle: "Digital Archives, Family Reconstruction & Historical Demography"
+title: ""
+subtitle: ""
 summary: "Genealogical research, digital archives, and demographic reconstruction projects for municipalities and institutions."
 date: "2025-01-01"
 type: page
