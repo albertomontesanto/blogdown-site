@@ -54,7 +54,13 @@ social:
   icon_pack: fab
   link: https://www.facebook.com/alberto.montesanto
 
+---
 
+### Support this project
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=alberto.montesanto%40gmail.com&currency_code=EUR)
+
+![Visitors](https://api.visitorbadge.io/api/visitors?path=albertomontesanto.netlify.app&label=Visitors&labelColor=%23007EC6&countColor=%23E53333&style=flat-square)
  
 ---
 
@@ -63,9 +69,5 @@ I am a professor of genetics, currently working to the analysis of the role of h
 {{< icon name="download" pack="fas" >}} Download my {{< staticref "uploads/CV.pdf" "newtab" >}}CV{{< /staticref >}}.
 
 
----
 
-### Support this project
-![Visitors](https://api.visitorbadge.io/api/visitors?path=albertomontesanto.netlify.app&label=Visitors&labelColor=%23007EC6&countColor=%23E53333&style=flat-square)
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=alberto.montesanto%40gmail.com&currency_code=EUR)
