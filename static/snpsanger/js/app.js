@@ -122,24 +122,52 @@ function selectResult(index){
   el('detailTitle').textContent=record.name;
   el('detailInfo').textContent=`${r.status}${r.strand?` · Lettura ${r.strand==='+'?'Forward':'Reverse'}`:''} · ${r.genotype||'—'}`;
   el('detailReason').textContent=r.reason || 'Verifica visivamente la morfologia dei picchi e l’allineamento.';
-  drawTrace(record);
+  // Aspetta che il contenitore precedentemente nascosto sia stato disposto dal browser.
+  scheduleTraceDraw(index);
+}
+
+let traceFrame = 0;
+function scheduleTraceDraw(index, attempt=0){
+  if (traceFrame) cancelAnimationFrame(traceFrame);
+  traceFrame=requestAnimationFrame(()=>{
+    if(index!==currentResult) return;
+    const record=results[index];
+    const status=el('traceDrawStatus');
+    try {
+      const didDraw=drawTrace(record);
+      if(!didDraw && attempt<5){
+        scheduleTraceDraw(index,attempt+1);
+        return;
+      }
+      if(!didDraw) throw new Error('L’area del grafico non ha dimensioni valide. Prova a ridimensionare la finestra.');
+      status.textContent='';status.hidden=true;
+    }catch(e){
+      console.error('[SangerSNP v3.2] Errore disegno cromatogramma:',e);
+      status.textContent=`Impossibile disegnare il cromatogramma: ${e?.message || 'errore sconosciuto'}. Apri la Console (Cmd+Option+J) per i dettagli.`;
+      status.hidden=false;
+    }
+  });
 }
 
 function drawTrace(record){
   const canvas=el('traceCanvas'),rect=canvas.getBoundingClientRect();
-  if(!rect.width || !rect.height)return;
+  if(rect.width<120 || rect.height<100)return false;
   const dpr=Math.min(window.devicePixelRatio||1,2);
   canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);
-  const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
+  const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Il browser non supporta Canvas 2D.');ctx.setTransform(dpr,0,0,dpr,0,0);
   const W=rect.width,H=rect.height;
   ctx.clearRect(0,0,W,H);
   const pad={left:49,right:17,top:27,bottom:37},pw=W-pad.left-pad.right,ph=H-pad.top-pad.bottom;
   const trace=record.trace, result=record.result;
-  if(!trace){ctx.fillStyle='#5d6f89';ctx.font='13px sans-serif';ctx.fillText('Impossibile visualizzare: file AB1 non letto.',20,50);return;}
+  if(!trace)throw new Error('File AB1 non disponibile.');
+  if(!trace.channels || !'ACGT'.split('').every(b=>trace.channels[b]?.length===trace.scanCount))throw new Error('Canali DATA9–12 mancanti o incoerenti.');
   const center=Number.isFinite(result.center)?result.center:trace.locations[Math.floor(trace.locations.length/2)];
-  const low=Math.max(0,center-150),high=Math.min(trace.scanCount-1,center+150);
+  if(!Number.isFinite(center))throw new Error('Nessuna coordinata di scansione valida.');
+  const low=Math.max(0,Math.floor(center)-150),high=Math.min(trace.scanCount-1,Math.ceil(center)+150);
+  if(high<=low)throw new Error('Intervallo di scansione non valido.');
   const scans=high-low || 1;
-  const max=Math.max(1,...'ACGT'.map(b=>{let v=0;for(let i=low;i<=high;i++) v=Math.max(v,trace.channels[b][i]);return v;}));
+  // Array.from evita l'errore di 'ACGT'.map che bloccava il rendering nelle versioni precedenti.
+  const max=Math.max(1,...Array.from('ACGT',b=>{let v=0;for(let i=low;i<=high;i++) v=Math.max(v,trace.channels[b][i]||0);return v;}));
   const x=p=>pad.left+(p-low)/scans*pw;
   const y=v=>pad.top+ph-(v/max)*ph;
   ctx.strokeStyle='#e6edf5';ctx.lineWidth=1;ctx.fillStyle='#8897ae';ctx.font='11px sans-serif';
@@ -150,7 +178,7 @@ function drawTrace(record){
     const a=trace.channels[b];ctx.strokeStyle=BASE_COLORS[b];ctx.lineWidth=1.7;ctx.beginPath();
     for(let i=low;i<=high;i++){const xx=x(i),yy=y(a[i]);if(i===low)ctx.moveTo(xx,yy);else ctx.lineTo(xx,yy);}ctx.stroke();
   }
-  const inView=trace.locations.map((p,i)=>({p,i})).filter(o=>o.p>low && o.p<high);
+  const inView=Array.from(trace.locations,(p,i)=>({p,i})).filter(o=>o.p>low && o.p<high);
   ctx.font='bold 12px ui-monospace,monospace';ctx.textAlign='center';
   for(const {p,i} of inView){const b=trace.calls[i];ctx.fillStyle=BASE_COLORS[b]||'#8d98a8';ctx.fillText(b,x(p),18);}
   ctx.textAlign='left';
@@ -159,8 +187,9 @@ function drawTrace(record){
     ctx.fillStyle='#9852d3';ctx.font='bold 11px sans-serif';ctx.fillText('SNP',Math.min(W-50,xx+5),pad.top+13);
   }
   ctx.fillStyle='#8493aa';ctx.font='11px sans-serif';ctx.fillText('Fluorescenza',5,12);
+  return true;
 }
-window.addEventListener('resize',()=>{if(resizeTimer)clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(currentResult>=0)drawTrace(results[currentResult]);},130);});
+window.addEventListener('resize',()=>{if(resizeTimer)clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(currentResult>=0)scheduleTraceDraw(currentResult);},130);});
 
 el('analyze').addEventListener('click',async()=>{
   if(!selectedFiles.length){setNotice('analysisStatus','Seleziona almeno un file AB1.','error');return;}
