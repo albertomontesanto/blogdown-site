@@ -1,23 +1,51 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SNPSanger</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center;
-           background: #eef5fc; color: #14295d; padding: 80px 20px; }
-    main { max-width: 650px; margin: auto; }
-    a { color: #1769bc; }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Genotipizzazione preliminare di varianti SNP da file Sanger AB1, direttamente nel browser." />
+  <title>Sanger SNP · Analisi cromatogrammi</title>
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <main>
-    <h1>SNPSanger</h1>
-    <h2>Applicazione in preparazione</h2>
-    <p>Strumento per l'analisi dei genotipi mediante sequenziamento Sanger.</p>
-    <p>Il servizio sarà disponibile prossimamente.</p>
-    <a href="/">Torna al sito principale</a>
-  </main>
+  <div class="shell">
+    <header class="header">
+      <div class="mark" aria-hidden="true"><svg viewBox="0 0 36 36"><path d="M10 4c14 8 2 19 16 28M26 4C12 12 24 23 10 32M12 10h12M11 18h14M12 26h12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg></div>
+      <div class="header-title"><span class="eyebrow">STRUMENTI DI ANALISI GENETICA</span><h1>Sanger <span>SNP</span></h1><p>Genotipizzazione da cromatogrammi AB1 · Analisi nel browser</p></div>
+      <span class="app-version">WEB v3.0 <span class="version-dot"></span></span>
+    </header>
+    <div class="pills"><span>chr8 : 46.830.810</span><span>GRCh38 / hg38</span><span>rs113601887</span><span><svg class="mini-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> AB1 elaborati in locale</span></div>
+    <div class="columns">
+      <section class="panel" aria-labelledby="ref-title">
+        <div class="panel-head"><span class="step">01</span><div><h2 id="ref-title">Riferimento genomico</h2><p>Verifica il polimorfismo con NCBI dbSNP e recupera la sequenza FASTA tramite EFetch.</p></div></div>
+        <div class="field-grid">
+          <label>Cromosoma<input id="chrom" type="text" value="8" inputmode="text" spellcheck="false" aria-label="Cromosoma" /></label>
+          <label>Posizione (1-based)<input id="pos" type="number" value="46830810" min="1" step="1" aria-label="Posizione genomica" /></label>
+          <label>Inizio FASTA (1-based)<input id="start" type="number" min="1" step="1" placeholder="automatico" aria-label="Inizio FASTA" /></label>
+        </div>
+        <label class="field">Identificativo variante<input id="rsid" type="text" value="rs113601887" spellcheck="false" /></label>
+        <div class="actions"><button type="button" id="fetchRef" class="primary"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v4h14v-4"/></svg> Recupera da NCBI dbSNP</button><button type="button" id="cacheRef" class="secondary">Usa cache locale</button></div>
+        <div id="referenceStatus" class="notice neutral" role="status" aria-live="polite">Inserisci il riferimento tramite NCBI oppure incolla manualmente un FASTA verificato.</div>
+        <label class="field">Sequenza di riferimento <small>(FASTA o ACGT)</small><textarea id="fasta" rows="7" spellcheck="false" placeholder=">chr8:46830310-46831310 GRCh38&#10;ACGT...&#10;&#10;Per un FASTA manuale, indica la prima coordinata nel campo Inizio FASTA."></textarea></label>
+        <p class="helper">L’app usa <strong>GRCh38/hg38</strong>. Con un FASTA manuale la corrispondenza tra rsID, sequenza e coordinate <strong>non è verificata</strong> automaticamente.</p>
+      </section>
+      <section class="panel" aria-labelledby="files-title">
+        <div class="panel-head"><span class="step">02</span><div><h2 id="files-title">Importa i cromatogrammi</h2><p>Seleziona uno o più file AB1 per l’analisi automatica dei picchi.</p></div></div>
+        <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Seleziona file AB1"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 45v6a6 6 0 0 0 6 6h24a6 6 0 0 0 6-6v-6M32 9v33M21 21 32 9l11 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><strong>Trascina oppure seleziona i file .ab1</strong><span>Massimo 100 file • 20 MB per file</span><input type="file" id="files" multiple accept=".ab1,.abi,application/octet-stream" aria-label="File AB1" /></div>
+        <div id="fileNames" class="file-names">Nessun file selezionato</div>
+        <div class="range-head"><label for="hetThreshold">Soglia eterozigosi <small>(picco secondario / principale)</small></label><strong id="rangeValue">0,28</strong></div><input type="range" id="hetThreshold" min="0.15" max="0.60" step="0.01" value="0.28" />
+        <p class="helper helper-tight">La soglia è <strong>euristica, non una probabilità</strong>. Picchi ambigui, segnali deboli o allineamenti incerti possono produrre «REVISIONE» o «NO CALL».</p>
+        <div class="actions analyze-actions"><button type="button" id="analyze" class="primary"><svg viewBox="0 0 24 24"><path d="M4 20V5m0 15h16m-12-5 4-5 3 3 5-7"/></svg> Analizza sequenze</button><button type="button" id="exportCsv" class="secondary" disabled>Esporta CSV</button></div>
+        <div id="analysisStatus" class="notice neutral" role="status" aria-live="polite">I cromatogrammi rimangono sul tuo dispositivo; non vengono inviati a Netlify o NCBI.</div>
+      </section>
+    </div>
+    <section class="panel results" id="resultsPanel" hidden>
+      <div class="results-header"><div><span class="eyebrow">RISULTATI DELL’ANALISI</span><h2>Genotipi e qualità</h2></div><span class="summary" id="summaryText"></span></div>
+      <div class="table-wrap"><table><thead><tr><th>Campione</th><th>Genotipo</th><th>Stato</th><th>Orient.</th><th>2° / 1° picco</th><th>Concordanza</th></tr></thead><tbody id="resultRows"></tbody></table></div>
+      <div id="detail" class="detail" hidden><div class="detail-head"><div><span class="eyebrow">CROMATOGRAMMA</span><h3 id="detailTitle"></h3></div><span class="strand-label" id="detailInfo"></span></div><div class="canvas-wrap"><canvas id="traceCanvas" aria-label="Cromatogramma dei quattro canali fluorescenti in corrispondenza del SNP" role="img"></canvas></div><div class="legend"><span><i class="a"></i>A</span><span><i class="c"></i>C</span><span><i class="g"></i>G</span><span><i class="t"></i>T</span><span class="locus-label">— SNP</span></div><p id="detailReason" class="helper"></p></div>
+    </section>
+    <footer><span>Sanger SNP Web · Ricerca / supporto all’interpretazione</span><span>Non è un dispositivo diagnostico · Verificare le chiamate sui picchi e con controlli noti</span></footer>
+  </div>
+  <script type="module" src="./js/app.js"></script>
 </body>
 </html>
