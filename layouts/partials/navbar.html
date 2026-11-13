@@ -341,3 +341,145 @@
 </script>
 <!-- END SOFTWARE DROPDOWN PATCH v1.0 -->
 
+<!-- BEGIN SOFTWARE MOBILE FIX v1.0 -->
+<style id="software-mobile-menu-fix-styles">
+/* Solo smartphone e tablet: il layout desktop rimane invariato. */
+@media (max-width: 991.98px) {
+  #navbar-main .navbar-toggler {
+    position: relative;
+    z-index: 1102;
+    pointer-events: auto;
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+  #navbar-main #navbar-content.mobile-menu-visible {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100%;
+    flex-basis: 100%;
+    max-height: calc(100dvh - 68px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+    z-index: 1101;
+  }
+  #navbar-main #navbar-content.mobile-menu-visible .navbar-nav {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100%;
+  }
+  #navbar-main .software-menu-host {
+    width: 100%;
+    position: relative !important;
+  }
+  #navbar-main .software-dropdown-list {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    width: calc(100% - 16px);
+    min-width: 0;
+    box-shadow: none;
+    border-radius: 3px;
+    border: 0;
+    border-left: 2px solid #adc7ea;
+    margin: 0 0 8px 16px !important;
+    padding: 2px 0 !important;
+    background: transparent;
+  }
+  #navbar-main .software-menu-host:not(.software-menu-open) > .software-dropdown-list {
+    display: none !important;
+  }
+  #navbar-main .software-menu-host.software-menu-open > .software-dropdown-list {
+    display: block !important;
+  }
+  #navbar-main .software-dropdown-list a {
+    min-height: 44px;
+    display: flex !important;
+    align-items: center;
+    white-space: normal;
+    font-size: 16px;
+    padding: 11px 14px !important;
+  }
+  #navbar-main .nav-link {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+}
+</style>
+<script id="software-mobile-menu-fix-script">
+(function () {
+  'use strict';
+  const MOBILE_QUERY = '(max-width: 991.98px)';
+  const isMobile = () => window.matchMedia(MOBILE_QUERY).matches;
+
+  function closeSoftware(nav) {
+    const host = nav.querySelector('.software-menu-host');
+    if (host) host.classList.remove('software-menu-open');
+    const trigger = nav.querySelector('.software-menu-trigger');
+    if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  function setMobileMenu(nav, visible) {
+    const panel = nav.querySelector('#navbar-content');
+    const toggler = nav.querySelector('.navbar-toggler');
+    if (!panel || !toggler) return;
+    panel.classList.toggle('mobile-menu-visible', visible);
+    panel.classList.toggle('show', visible);
+    panel.classList.remove('collapsing');
+    toggler.setAttribute('aria-expanded', String(visible));
+    if (!visible) closeSoftware(nav);
+  }
+
+  // Capture phase avoids competing Bootstrap and custom dropdown click handlers.
+  document.addEventListener('click', function (event) {
+    if (!isMobile()) return;
+    const nav = document.getElementById('navbar-main');
+    if (!nav) return;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const toggler = target.closest('.navbar-toggler');
+    if (toggler && nav.contains(toggler)) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const panel = nav.querySelector('#navbar-content');
+      if (panel) {
+        setMobileMenu(nav, !panel.classList.contains('mobile-menu-visible'));
+      }
+      return;
+    }
+
+    const trigger = target.closest('.software-menu-trigger');
+    if (trigger && nav.contains(trigger)) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const host = trigger.closest('.software-menu-host');
+      if (host) {
+        const opened = host.classList.toggle('software-menu-open');
+        trigger.setAttribute('aria-expanded', String(opened));
+      }
+      return;
+    }
+  }, true);
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape' || !isMobile()) return;
+    const nav = document.getElementById('navbar-main');
+    if (nav) setMobileMenu(nav, false);
+  }, true);
+
+  window.addEventListener('resize', function () {
+    if (isMobile()) return;
+    const nav = document.getElementById('navbar-main');
+    if (!nav) return;
+    const panel = nav.querySelector('#navbar-content');
+    const toggler = nav.querySelector('.navbar-toggler');
+    if (panel) panel.classList.remove('mobile-menu-visible');
+    if (toggler) toggler.setAttribute('aria-expanded', 'false');
+    closeSoftware(nav);
+  });
+})();
+</script>
+<!-- END SOFTWARE MOBILE FIX v1.0 -->
