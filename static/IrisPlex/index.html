@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102c6a">
+  <meta name="description" content="IrisPlex Local, prototipo sperimentale per la predizione del colore degli occhi basato su 6 SNP.">
+  <title>IrisPlex Local | Predizione del colore degli occhi</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="model.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><span class="brand-symbol" aria-hidden="true">◉</span><span>IrisPlex <b>Local</b></span></div>
+      <div class="title-block"><h1>The IrisPlex System</h1><p>Predizione locale del colore degli occhi · Modello sperimentale a 3 categorie</p></div>
+      <span class="version">v2.0</span>
+    </div>
+  </header>
+  <main class="page">
+    <section class="hero" aria-label="Esempi di iridi di colore blu e marrone">
+      <img src="assets/occhi_blu_marroni.jpg" alt="Due occhi ravvicinati: a sinistra iride blu-grigia e a destra iride marrone" width="864" height="172">
+      <div class="hero-caption"><span>Occhio blu</span><span>Occhio marrone</span></div>
+    </section>
+    <div class="intro">
+      <div><h2>Inserisci i genotipi</h2><p>Per ciascuno SNP, scegli con un clic il genotipo rilevato. La casella selezionata indica <strong>0, 1 o 2 copie dell’allele contato</strong>; <strong>NA</strong> indica un dato mancante.</p></div>
+      <div class="privacy"><span aria-hidden="true">◈</span> Elaborazione locale · Nessun dato inviato online</div>
+    </div>
+    <section class="panel input-panel" aria-labelledby="tab-title">
+      <div class="panel-heading"><h3 id="tab-title">I sei marcatori IrisPlex</h3><span class="hint">Selezione diretta del genotipo</span></div>
+      <div class="table-scroll">
+        <table class="snp-table"><thead><tr><th scope="col">#</th><th scope="col">Gene</th><th scope="col">SNP</th><th scope="col">Allele contato</th><th scope="col">Genotipo (clicca per selezionare)</th></tr></thead><tbody id="snp-rows"></tbody></table>
+      </div>
+      <div class="table-footnote"><strong>Esempio HERC2:</strong> <span>GG = 0 A</span><span>AG / GA = 1 A</span><span>AA = 2 A</span><span>NA = non disponibile</span></div>
+      <div class="actions">
+        <button id="predict" class="btn btn-primary" type="button"><span class="btn-icon" aria-hidden="true">◎</span> Mostra probabilità predette</button>
+        <button id="clear" class="btn btn-outline" type="button">Azzera selezioni</button>
+        <button id="export" class="btn btn-outline btn-export" type="button" disabled>Esporta risultato CSV</button>
+      </div>
+      <p id="status" class="status" role="status" aria-live="polite">Seleziona i genotipi e premi “Mostra probabilità predette”.</p>
+    </section>
+    <section id="results" class="panel results-panel" aria-labelledby="result-title" hidden>
+      <div class="panel-heading results-heading"><div><h3 id="result-title">Probabilità predette del colore degli occhi</h3><p id="result-subtitle" class="subheading">Calcolate dal modello locale a tre categorie</p></div><span class="tag">Predizione sperimentale</span></div>
+      <div id="probabilities" class="probability-list"></div>
+      <div id="prediction-note" class="prediction-note"></div>
+    </section>
+    <section class="panel info-panel" aria-label="Informazioni sul modello">
+      <div><h3>Informazioni sul modello</h3><p>Regressione logistica multinomiale regolarizzata (L2) con HERC2 categorico, addestrata su <strong>238 individui</strong> con fenotipo osservato nella colonna <code>Colore_BUIO</code>.</p><p>Gruppi: <strong>Blu</strong> (A + AG), <strong>Verde/Castano-verde</strong> (V + CV), <strong>Marrone</strong> (CC + CS + N).</p></div>
+      <div class="metrics" id="metrics"></div>
+      <details class="details"><summary>Limiti e validazione del modello</summary><p>Le metriche sono ottenute tramite validazione incrociata stratificata a 5 fold. La regolarizzazione è stata selezionata sulla stessa CV: le stime sono esplorative e possono risultare ottimistiche. Non è stata svolta una validazione indipendente esterna.</p><p>Gli SNP mancanti (eccetto HERC2, obbligatorio) sono sostituiti con 0 copie dell’allele contato, secondo il preprocessing della versione precedente. La presenza di dati mancanti riduce l'affidabilità della stima. Le percentuali non sono certezze diagnostiche e non vanno utilizzate per identificazione forense individuale senza ulteriore validazione.</p><p>Questo modello è addestrato sul dataset fornito e <strong>non coincide con il software ufficiale Erasmus MC</strong>.</p></details>
+    </section>
+    <footer class="footer">IrisPlex Local · Applicazione autonoma per uso esplorativo e di ricerca. Nessuna connessione a Internet richiesta.</footer>
+  </main>
+</body></html>
