@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Peer-reviewed publications by Alberto Montesanto indexed in PubMed, with bibliographic statistics, trends, and searchable references.">
+  <title>Publications | Alberto Montesanto</title>
+  <link rel="stylesheet" href="/publications/styles.css?v=1.0">
+  <script src="/publications/app.js?v=1.0" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <nav class="nav wrap" aria-label="Page navigation">
+      <a href="/author/admin/" class="home">← Back to Home</a>
+      <a href="/publication/" class="archive">Hugo publication archive</a>
+    </nav>
+  </header>
+  <main class="wrap">
+    <div class="hero">
+      <p class="eyebrow">Research &middot; Bibliography</p>
+      <h1>Scientific <span>Publications</span></h1>
+      <p class="lede">A searchable collection of Alberto Montesanto’s publications indexed in PubMed, with an overview of research output over time.</p>
+      <p class="disclaimer">Data source: <a href="https://pubmed.ncbi.nlm.nih.gov/?term=Montesanto+A%5BAuthor%5D" target="_blank" rel="noopener">NCBI PubMed</a> · Publication counts only · No citation or h-index estimates</p>
+    </div>
+    <section class="metrics" aria-label="Bibliometric overview">
+      <div class="metric"><div id="stat-total" class="metric-number">—</div><div class="metric-label">PubMed publications</div></div>
+      <div class="metric"><div id="stat-span" class="metric-number">—</div><div class="metric-label">Years covered</div></div>
+      <div class="metric"><div id="stat-journals" class="metric-number">—</div><div class="metric-label">Distinct journals</div></div>
+      <div class="metric"><div id="stat-latest" class="metric-number">—</div><div class="metric-label">Publications in latest year</div></div>
+    </section>
+    <div class="viz-grid">
+      <section class="panel" aria-labelledby="year-chart-title">
+        <div class="panel-head"><h2 id="year-chart-title">Publications by year</h2><span id="year-note" class="tiny">PubMed-indexed</span></div>
+        <div id="year-chart" class="year-chart" role="img" aria-label="Annual publication counts"></div>
+      </section>
+      <section class="panel" aria-labelledby="journals-title">
+        <div class="panel-head"><h2 id="journals-title">Most frequent journals</h2><span class="tiny">Top 7</span></div>
+        <div id="journal-chart" class="journal-chart"></div>
+      </section>
+    </div>
+    <section class="results" aria-labelledby="all-papers">
+      <div class="results-heading"><div><p class="eyebrow">Bibliography</p><h2 id="all-papers">Publication list</h2></div><span class="subtext" id="sync-date">Waiting for data</span></div>
+      <div class="filters">
+        <label class="search-field"><span>Search publications</span><input id="search" type="search" placeholder="Title, author, DOI, journal…" autocomplete="off"></label>
+        <label><span>Year</span><select id="filter-year"><option value="">All years</option></select></label>
+        <label><span>Journal</span><select id="filter-journal"><option value="">All journals</option></select></label>
+        <label><span>Order</span><select id="sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="title">Title A–Z</option></select></label>
+      </div>
+      <div class="status-line"><span id="shown" aria-live="polite">Loading publications…</span><a href="/publications/data/publications.csv" download class="export">↓ Download CSV</a></div>
+      <div id="paper-list" class="paper-list" aria-live="polite"></div>
+      <button class="more" id="show-more" hidden>Show more publications</button>
+    </section>
+    <footer>
+      <p><strong>Source and scope.</strong> This list contains author-matched records indexed in PubMed. Other scholarly outputs not indexed in PubMed are not counted. The annual chart uses publication years, not citation counts. Records requiring author disambiguation are excluded pending review.</p>
+      <p id="review-note"></p>
+      <p>© <span id="current-year">2026</span> Alberto Montesanto · <a href="/author/admin/">Home</a></p>
+    </footer>
+  </main>
+</body>
+</html>
