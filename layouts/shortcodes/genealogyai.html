@@ -1,0 +1,72 @@
+<style>
+  .gai-page{--gai-ink:#17314c;--gai-muted:#536782;--gai-line:#d9e5ee;--gai-blue:#245c9d;max-width:1090px;margin:0 auto 3rem;font-family:inherit;color:var(--gai-ink)}
+  .gai-page *{box-sizing:border-box}
+  .gai-page .gai-hero{display:grid;grid-template-columns:minmax(215px,.86fr) minmax(310px,1.28fr);gap:2.2rem;align-items:center;padding:2rem;border:1px solid var(--gai-line);border-radius:24px;background:linear-gradient(135deg,#f7fbfb 0%,#edf4fc 100%);box-shadow:0 10px 30px rgba(22,53,83,.06)}
+  .gai-page .gai-image{padding:1rem;min-width:0;text-align:center}
+  .gai-page .gai-image img{display:block;width:100%;max-width:360px;height:auto;margin:0 auto;border-radius:15px}
+  .gai-page .gai-eyebrow{font-weight:750;letter-spacing:.16em;text-transform:uppercase;font-size:.8rem;color:#47709f;margin-bottom:.7rem}
+  .gai-page .gai-name{font-size:clamp(2.4rem,5vw,3.7rem);line-height:1.08;font-weight:800;letter-spacing:-.04em;margin:0 0 1rem;color:var(--gai-ink)}
+  .gai-page .gai-lead{font-size:1.12rem;line-height:1.7;color:var(--gai-muted);margin:0 0 1.25rem}
+  .gai-page .gai-tags{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1.5rem}
+  .gai-page .gai-tag{display:inline-block;padding:.4rem .7rem;background:#fff;border:1px solid #dce7ef;border-radius:999px;font-size:.82rem;font-weight:650;color:#3e5d80}
+  .gai-page .gai-home{display:inline-flex;gap:.45rem;align-items:center;padding:.65rem 1rem;border-radius:9px;background:#235d98;color:#fff !important;text-decoration:none !important;font-weight:700;transition:background .16s}
+  .gai-page .gai-home:hover{background:#164575;color:#fff !important}
+  .gai-page .gai-section{margin-top:2rem}
+  .gai-page .gai-section h2{font-size:1.7rem;color:var(--gai-ink);margin:0 0 .9rem}
+  .gai-page .gai-section p{font-size:1.02rem;color:#3f5267;line-height:1.85;margin:.7rem 0}
+  .gai-page .gai-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-top:1.45rem}
+  .gai-page .gai-card{background:#fff;border:1px solid var(--gai-line);border-radius:16px;padding:1.35rem;box-shadow:0 5px 20px rgba(22,53,83,.04)}
+  .gai-page .gai-card .gai-number{display:inline-flex;width:2rem;height:2rem;align-items:center;justify-content:center;border-radius:8px;background:#e5f1fc;color:#245c9d;font-weight:800;margin-bottom:.9rem}
+  .gai-page .gai-card h3{font-size:1.07rem;margin:0 0 .55rem;color:var(--gai-ink)}
+  .gai-page .gai-card p{font-size:.95rem;line-height:1.65;color:var(--gai-muted);margin:0}
+  .gai-page .gai-note{background:#f3f8f7;border-left:4px solid #289478;border-radius:0 12px 12px 0;padding:1.2rem 1.3rem;margin-top:1.65rem;color:#2f5860;line-height:1.75}
+  @media(max-width:790px){.gai-page .gai-hero{grid-template-columns:1fr;gap:1rem;padding:1.3rem}.gai-page .gai-image{padding:0}.gai-page .gai-image img{max-width:260px}.gai-page .gai-cards{grid-template-columns:1fr}.gai-page .gai-name{font-size:2.7rem}}
+</style>
+<section class="gai-page" aria-label="GenealogyAI software">
+  <div class="gai-hero">
+    <div class="gai-image">
+      <img src="/uploads/genealogyai-logo.jpg" alt="GenealogyAI logo: a family tree merging with DNA and a network of connected nodes" loading="eager">
+    </div>
+    <div>
+      <div class="gai-eyebrow">Computational genealogy software</div>
+      <h2 class="gai-name">GenealogyAI</h2>
+      <p class="gai-lead">From digitized historical records to coherent, multigenerational family networks.</p>
+      <div class="gai-tags" aria-label="Key technologies">
+        <span class="gai-tag">Probabilistic record linkage</span>
+        <span class="gai-tag">Genealogical inference</span>
+        <span class="gai-tag">Historical archives</span>
+      </div>
+      <a class="gai-home" href="/author/admin/" aria-label="Return to Home">← Back to Home</a>
+    </div>
+  </div>
+
+  <div class="gai-section">
+    <h2>Overview</h2>
+    <p><strong>GenealogyAI</strong> is an innovative software platform for the automated reconstruction of multigenerational genealogical networks from historical birth, marriage, and death records that have been previously digitized and indexed.</p>
+    <p>The system combines <strong>probabilistic record linkage</strong> procedures with a genealogical inference framework based on <strong>temporal, biological, and relational constraints</strong>. This approach enables the automatic identification of individuals appearing in different documents and the consistent reconstruction of their family relationships.</p>
+    <p>The system's decision parameters are calibrated using manually validated reference genealogies, enabling automatic adaptation to different archival contexts and historical periods.</p>
+  </div>
+
+  <div class="gai-section">
+    <h2>How GenealogyAI works</h2>
+    <div class="gai-cards">
+      <article class="gai-card">
+        <span class="gai-number">01</span>
+        <h3>Historical record integration</h3>
+        <p>Uses indexed birth, marriage, and death records as the basis for reconstructing family histories.</p>
+      </article>
+      <article class="gai-card">
+        <span class="gai-number">02</span>
+        <h3>Identity and relationship inference</h3>
+        <p>Links records probabilistically and infers family relationships under temporal, biological, and relational constraints.</p>
+      </article>
+      <article class="gai-card">
+        <span class="gai-number">03</span>
+        <h3>Reference-based calibration</h3>
+        <p>Calibrates decision parameters against manually validated genealogies to accommodate different historical datasets.</p>
+      </article>
+    </div>
+  </div>
+
+  <p class="gai-note"><strong>Purpose:</strong> To support the consistent reconstruction of historical family networks across generations, while adapting the analysis to the characteristics of individual archival collections.</p>
+</section>
