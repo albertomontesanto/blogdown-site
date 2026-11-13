@@ -17,6 +17,21 @@ main:
   - name: Visualizations
     url: /visualizations/
     weight: 60
+    
+  - name: Programmi
+    identifier: programmi
+    weight: 65
+
+  - name: IrisPlex
+    parent: programmi
+    url: /irisplex/
+    weight: 10
+
+  - name: SNPSanger
+    parent: programmi
+    url: /snpsanger/
+    weight: 20
+    
   - name: Contacts
     url: /contact/
     weight: 70
