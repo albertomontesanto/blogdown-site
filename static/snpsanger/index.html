@@ -6,6 +6,21 @@
   <meta name="description" content="Genotipizzazione preliminare di varianti SNP da file Sanger AB1, direttamente nel browser." />
   <title>Sanger SNP · Analisi cromatogrammi</title>
   <link rel="stylesheet" href="./styles.css" />
+<style id="snpsanger-home-link-style">
+    .pills .snpsanger-home-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-left: auto; border-radius: 8px;
+      background: #2457ca; color: #fff;
+      padding: 9px 14px; font-size: 13px; font-weight: 750;
+      line-height: 1.4; text-decoration: none;
+      transition: background-color .15s ease;
+    }
+    .pills .snpsanger-home-link:hover { background: #18449e; }
+    .pills .snpsanger-home-link:focus-visible {
+      outline: 3px solid #95b5fa; outline-offset: 3px;
+    }
+    .pills .snpsanger-home-link svg { flex-shrink: 0; }
+  </style>
 </head>
 <body>
   <div class="shell">
@@ -14,7 +29,12 @@
       <div class="header-title"><span class="eyebrow">STRUMENTI DI ANALISI GENETICA</span><h1>Sanger <span>SNP</span></h1><p>Genotipizzazione da cromatogrammi AB1 · Analisi nel browser</p></div>
       <span class="app-version">WEB v3.2 <span class="version-dot"></span></span>
     </header>
-    <div class="pills"><span>chr8 : 46.830.810</span><span>GRCh38 / hg38</span><span>rs113601887</span><span><svg class="mini-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> AB1 elaborati in locale</span></div>
+    <div class="pills"><span>GRCh38 / hg38</span><span><svg class="mini-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> AB1 elaborati in locale</span>
+    <a class="snpsanger-home-link" href="/author/admin/" aria-label="Torna alla Home">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7"/><path d="M5 9v12h14V9"/><path d="M9 21v-7h6v7"/></svg>
+      Torna alla Home
+    </a>
+    </div>
     <div class="columns">
       <section class="panel" aria-labelledby="ref-title">
         <div class="panel-head"><span class="step">01</span><div><h2 id="ref-title">Riferimento genomico</h2><p>Verifica il polimorfismo con NCBI dbSNP e recupera la sequenza FASTA tramite EFetch.</p></div></div>
