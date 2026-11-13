@@ -9,6 +9,39 @@
   <link rel="stylesheet" href="styles.css">
   <script src="model.js" defer></script>
   <script src="app.js" defer></script>
+
+<!-- IRISPLEX_HOME_BIBLIO_20261113:STYLE -->
+<style>
+  .irisplex-home-button {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 9px 14px; border-radius: 9px;
+    border: 1px solid rgba(255,255,255,.55);
+    background: rgba(255,255,255,.12); color: #fff !important;
+    text-decoration: none !important; font-weight: 650; font-size: 14px;
+    line-height: 1.25; white-space: nowrap; justify-self: start;
+  }
+  .irisplex-home-button:hover, .irisplex-home-button:focus-visible {
+    background: rgba(255,255,255,.24); color: #fff !important;
+    text-decoration: none !important;
+  }
+  .irisplex-bibliography {
+    box-sizing: border-box; width: min(100% - 32px, 1060px);
+    margin: 28px auto 36px; padding: 20px 24px;
+    border: 1px solid #d4e1f0; border-radius: 13px;
+    background: #fff; color: #263750;
+    font-family: inherit; font-size: 14px; line-height: 1.65;
+  }
+  .irisplex-bibliography h2 {
+    font-size: 17px; color: #163c79; margin: 0 0 8px;
+  }
+  .irisplex-bibliography p { margin: 12px 0 0; }
+  .irisplex-bibliography a { color: #2456ae; overflow-wrap: anywhere; }
+  @media (max-width: 600px) {
+    .irisplex-bibliography { padding: 16px; }
+    .irisplex-home-button { padding: 7px 10px; font-size: 12px; }
+  }
+</style>
+
 </head>
 <body>
   <header class="topbar">
@@ -52,4 +85,62 @@
     </section>
     <footer class="footer">IrisPlex Local · Applicazione autonoma per uso esplorativo e di ricerca. Nessuna connessione a Internet richiesta.</footer>
   </main>
+
+<!-- IRISPLEX_HOME_BIBLIO_20261113:REFERENCES -->
+<section class="irisplex-bibliography" aria-label="Riferimenti bibliografici IrisPlex">
+  <h2>Riferimenti bibliografici</h2>
+  <p><strong>Sistema IrisPlex originale.</strong> Walsh S, Liu F, Ballantyne KN,
+  van Oven M, Lao O, Kayser M. (2011). IrisPlex: a sensitive DNA tool for accurate
+  prediction of blue and brown eye colour in the absence of ancestry information.
+  <em>Forensic Science International: Genetics</em>, 5(3), 170–180.
+  <a href="https://doi.org/10.1016/j.fsigen.2010.02.004" target="_blank" rel="noopener noreferrer">https://doi.org/10.1016/j.fsigen.2010.02.004</a>.</p>
+  <p><strong>Studio sul colore degli occhi e IrisPlex (238 individui).</strong>
+  Paparazzo E, Gozalishvili A, Lagani V, Geracitano S, Bauleo A, Falcone E,
+  Passarino G, Montesanto A. (2022). A new approach to broaden the range of eye
+  colour identifiable by IrisPlex in DNA phenotyping.
+  <em>Scientific Reports</em>, 12, 12803.
+  <a href="https://doi.org/10.1038/s41598-022-17208-w" target="_blank" rel="noopener noreferrer">https://doi.org/10.1038/s41598-022-17208-w</a>.</p>
+</section>
+
+<!-- IRISPLEX_HOME_BIBLIO_20261113:HOME -->
+<script>
+(function() {
+  function installHomeButton() {
+    if (document.querySelector('.irisplex-home-button')) return;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let match = null, node;
+    while ((node = walker.nextNode())) {
+      if (node.textContent.trim() !== 'IrisPlex Local') continue;
+      const parent = node.parentElement;
+      if (parent && parent.closest('header, nav, .topbar, .site-header, .header, [class*="topbar"], [class*="header"]')) {
+        match = node; break;
+      }
+    }
+    if (!match) {
+      // Non si modifica il resto dell'interfaccia se il marchio non e' riconosciuto.
+      console.warn('IrisPlex: scritta "IrisPlex Local" non trovata nella barra superiore.');
+      return;
+    }
+    let old = match.parentElement;
+    while (old.parentElement &&
+      !old.parentElement.matches('header, nav, .topbar, .site-header, .header') &&
+      (old.parentElement.textContent || '').trim().length <= 40 &&
+      !old.parentElement.querySelector('h1, h2, main')) {
+      old = old.parentElement;
+    }
+    const link = document.createElement('a');
+    link.className = 'irisplex-home-button';
+    link.href = '/author/admin/';
+    link.setAttribute('aria-label', 'Torna alla Home');
+    link.textContent = '← Torna alla Home';
+    old.replaceWith(link);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', installHomeButton, {once:true});
+  } else {
+    installHomeButton();
+  }
+})();
+</script>
+
 </body></html>
