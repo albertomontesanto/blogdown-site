@@ -143,4 +143,48 @@
 })();
 </script>
 
+
+<style id="irisplex-home-button-fix">
+  .ip-home-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:.45rem;
+    padding:.55rem .9rem;
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:999px;
+    color:#fff !important;
+    background:rgba(255,255,255,.08);
+    text-decoration:none !important;
+    font-weight:700;
+    font-size:1rem;
+    line-height:1;
+    box-shadow:none;
+  }
+  .ip-home-btn:hover{background:rgba(255,255,255,.16); color:#fff !important;}
+</style>
+<script id="irisplex-home-button-fix">
+(function(){
+  function replaceBrandWithHome(){
+    const wantedText = 'IrisPlex Local';
+    const nodes = Array.from(document.querySelectorAll('body *'));
+    const target = nodes.find(el => {
+      const txt = (el.textContent || '').replace(/\s+/g,' ').trim();
+      if (!txt.includes(wantedText)) return false;
+      const rect = el.getBoundingClientRect();
+      return rect.top < 220 && rect.left < 450;
+    });
+    if (!target) return;
+    target.innerHTML = '<a href="/author/admin/" class="ip-home-btn" aria-label="Torna alla Home">← Torna alla Home</a>';
+    target.style.display = 'flex';
+    target.style.alignItems = 'center';
+    target.style.justifyContent = 'flex-start';
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', replaceBrandWithHome);
+  } else {
+    replaceBrandWithHome();
+  }
+})();
+</script>
+
 </body></html>
