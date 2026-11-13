@@ -139,7 +139,7 @@ function drawTrace(record){
   const center=Number.isFinite(result.center)?result.center:trace.locations[Math.floor(trace.locations.length/2)];
   const low=Math.max(0,center-150),high=Math.min(trace.scanCount-1,center+150);
   const scans=high-low || 1;
-  const max=Math.max(1,...'ACGT'.map(b=>{let v=0;for(let i=low;i<=high;i++) v=Math.max(v,trace.channels[b][i]);return v;}));
+  const max=Math.max(1,...Array.from('ACGT',b=>{let v=0;for(let i=low;i<=high;i++) v=Math.max(v,trace.channels[b][i]);return v;}));
   const x=p=>pad.left+(p-low)/scans*pw;
   const y=v=>pad.top+ph-(v/max)*ph;
   ctx.strokeStyle='#e6edf5';ctx.lineWidth=1;ctx.fillStyle='#8897ae';ctx.font='11px sans-serif';
@@ -150,7 +150,7 @@ function drawTrace(record){
     const a=trace.channels[b];ctx.strokeStyle=BASE_COLORS[b];ctx.lineWidth=1.7;ctx.beginPath();
     for(let i=low;i<=high;i++){const xx=x(i),yy=y(a[i]);if(i===low)ctx.moveTo(xx,yy);else ctx.lineTo(xx,yy);}ctx.stroke();
   }
-  const inView=trace.locations.map((p,i)=>({p,i})).filter(o=>o.p>low && o.p<high);
+  const inView=Array.from(trace.locations,(p,i)=>({p,i})).filter(o=>o.p>low && o.p<high);
   ctx.font='bold 12px ui-monospace,monospace';ctx.textAlign='center';
   for(const {p,i} of inView){const b=trace.calls[i];ctx.fillStyle=BASE_COLORS[b]||'#8d98a8';ctx.fillText(b,x(p),18);}
   ctx.textAlign='left';
