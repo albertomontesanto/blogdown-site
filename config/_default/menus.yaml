@@ -14,12 +14,14 @@ main:
   - name: Projects
     url: /project/
     weight: 50
+    
   - name: Visualizations
     url: /visualizations/
     weight: 60
     
   - name: Programmi
     identifier: programmi
+    url: /programmi/
     weight: 65
 
   - name: IrisPlex
