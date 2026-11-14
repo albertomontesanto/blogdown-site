@@ -13,8 +13,38 @@ main {max-width:900px; margin:50px auto; padding:20px;}
 .card {background:white; padding:30px; border-radius:12px; flex:1; min-width:230px;}
 a {color:#1463bd;}
 </style>
+  <link rel="stylesheet" href="/site-nav/navbar.css?v=1">
+  <script src="/site-nav/navbar.js?v=1" defer></script>
 </head>
 <body>
+<!-- BEGIN AM SHARED NAV -->
+<header class="am-global-header">
+  <nav class="am-nav" aria-label="Main navigation">
+    <a class="am-brand" href="/author/admin/">Alberto Montesanto</a>
+    <button type="button" class="am-mobile-toggle" aria-label="Open navigation menu" aria-controls="am-navigation-list" aria-expanded="false">
+      <span class="am-hamburger" aria-hidden="true"><i></i><i></i><i></i></span>
+    </button>
+    <ul class="am-menu" id="am-navigation-list">
+      <li><a class="am-menu-link" href="/author/admin/">Home</a></li>
+      <li><a class="am-menu-link" href="/publications/">Publications</a></li>
+      <li><a class="am-menu-link" href="/courses/">Teaching</a></li>
+      <li><a class="am-menu-link" href="/project/">Projects</a></li>
+      <li class="am-software-holder">
+        <button type="button" class="am-software-trigger am-active" aria-expanded="false" aria-haspopup="true" aria-controls="am-software-submenu" aria-current="page">
+          Software <span class="am-chevron" aria-hidden="true"></span>
+        </button>
+        <ul id="am-software-submenu" class="am-submenu" aria-label="Software submenu">
+          <li><a href="/genealogy/">Genealogy</a></li>
+          <li><a href="/irisplex/">IrisPlex</a></li>
+          <li><a href="/snpsanger/">SNPSanger</a></li>
+          <li><a href="/visualizations/">Visualizations</a></li>
+        </ul>
+      </li>
+      <li><a class="am-menu-link" href="/contact/">Contacts</a></li>
+    </ul>
+  </nav>
+</header>
+<!-- END AM SHARED NAV -->
 <header><h1>Programmi</h1><p>Applicazioni scientifiche di genetica</p></header>
 <main>
 <div class="cards">
