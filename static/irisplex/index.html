@@ -42,8 +42,36 @@
   }
 </style>
 
+  <link rel="stylesheet" href="/site-nav/navbar.css?v=3">
+  <script src="/site-nav/navbar.js?v=3" defer></script>
 </head>
 <body>
+<!-- BEGIN AM SHARED NAV -->
+<header class="am-global-header">
+  <nav class="am-nav" aria-label="Main navigation">
+    <a class="am-brand" href="/author/admin/">Alberto Montesanto</a>
+    <button type="button" class="am-mobile-toggle" aria-label="Open navigation menu" aria-controls="am-navigation-list" aria-expanded="false">
+      <span class="am-hamburger" aria-hidden="true"><i></i><i></i><i></i></span>
+    </button>
+    <ul class="am-menu" id="am-navigation-list">
+      <li><a class="am-menu-link" href="/author/admin/">Home</a></li>
+      <li><a class="am-menu-link" href="/publications/">Publications</a></li>
+      <li><a class="am-menu-link" href="/courses/">Teaching</a></li>
+      <li><a class="am-menu-link" href="/project/">Projects</a></li>
+      <li class="am-software-holder">
+    <button type="button" class="am-software-trigger am-active" aria-expanded="false" aria-haspopup="true" aria-controls="am-software-submenu">Software <span class="am-chevron" aria-hidden="true"></span></button>
+    <ul id="am-software-submenu" class="am-submenu" aria-label="Software submenu">
+      <li><a href="/genealogy/">Genealogy</a></li>
+      <li><a href="/irisplex/" aria-current="page">IrisPlex</a></li>
+      <li><a href="/snpsanger/">SNPSanger</a></li>
+      <li><a href="/visualizations/">Visualizations</a></li>
+    </ul>
+  </li>
+      <li><a class="am-menu-link" href="/contact/">Contacts</a></li>
+    </ul>
+  </nav>
+</header>
+<!-- END AM SHARED NAV -->
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand"><span class="brand-symbol" aria-hidden="true">◉</span><span>IrisPlex <b>Local</b></span></div>

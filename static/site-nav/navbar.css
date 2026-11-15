@@ -1,4 +1,4 @@
-/* Shared navigation for Hugo standalone pages: Publications and Software.
+/* Shared navigation for Hugo standalone pages: Publications, Software, IrisPlex and SNPSanger.
    Scoped selectors prevent changes to the applications and page layouts. */
 header.am-global-header,
 header.am-global-header * { box-sizing: border-box; }
@@ -16,14 +16,14 @@ header.am-global-header {
 }
 .am-global-header .am-nav {
   width: 100%;
-  max-width: 1550px;
+  max-width: 1380px;
   min-height: 76px;
-  padding: 0 28px;
+  padding: 0 24px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 28px;
+  justify-content: flex-start;
+  gap: clamp(24px, 3.3vw, 56px);
 }
 .am-global-header a,
 .am-global-header button {
@@ -47,8 +47,8 @@ header.am-global-header {
 .am-global-header .am-menu {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: clamp(14px, 1.6vw, 27px);
+  justify-content: flex-start;
+  gap: clamp(13px, 1.45vw, 25px);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -183,4 +183,11 @@ header.am-global-header {
 }
 @media (prefers-reduced-motion: reduce) {
   .am-global-header .am-chevron { transition: none; }
+}
+
+/* Maintain consistent placement of the navigation on application pages. */
+.am-global-header .am-menu a[aria-current="page"],
+.am-global-header .am-submenu a[aria-current="page"] { color: #265de3; }
+@media (min-width: 1101px) {
+  .am-global-header .am-nav { flex-wrap: nowrap; }
 }
