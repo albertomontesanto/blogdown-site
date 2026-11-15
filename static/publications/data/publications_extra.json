@@ -1,0 +1,40 @@
+{
+  "records": [
+    {
+      "pmid": "",
+      "doi": "10.1186/s12967-026-08997-z",
+      "title": "Red cell distribution width and 5-year mortality across older adult care settings: a pooled European cohort analysis with US validation",
+      "authors": [
+        "Mirko Di Rosa",
+        "Mirella Aurora Aceto",
+        "Ersilia Paparazzo",
+        "Teresa Serra Cassano",
+        "Pierluigi Mercatante",
+        "Francesco De Rango",
+        "Lucia Muglia",
+        "Annalisa Cozza",
+        "Chiara Chinigò",
+        "Giuseppe Passarino",
+        "Antonio Cherubini",
+        "Andrea Corsonello",
+        "Riccardo Sarzani",
+        "Roberto Antonicelli",
+        "Giuseppe Pelliccioni",
+        "Roberta Galeazzi",
+        "Guido Gembillo",
+        "Domenico Santoro",
+        "Luca Soraci",
+        "Alberto Montesanto",
+        "Fabrizia Lattanzio"
+      ],
+      "journal": "Journal of Translational Medicine",
+      "date": "2026-09-25",
+      "year": 2026,
+      "url": "https://doi.org/10.1186/s12967-026-08997-z",
+      "status": "confirmed",
+      "source": "Publisher DOI",
+      "evidence": "Publisher article and verified DOI; no confirmed PMID"
+    }
+  ],
+  "source": "Verified publisher DOI additions (not necessarily PubMed-indexed)"
+}

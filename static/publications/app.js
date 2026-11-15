@@ -7,11 +7,55 @@ function countBy(a,k){const counts=new Map();for(const r of a){const val=r[k];if
 function setStats(){const a=state.all,years=a.map(x=>Number(x.year)).filter(Number.isFinite).sort((x,y)=>x-y);$('stat-total').textContent=a.length.toLocaleString('en-US');$('stat-span').textContent=years.length?`${years[0]}–${years.at(-1)}`:'—';$('stat-journals').textContent=new Set(a.map(x=>x.journal).filter(Boolean)).size;$('stat-latest').textContent=years.length?a.filter(x=>Number(x.year)===years.at(-1)).length:'—';$('year-note').textContent=years.length?`Latest: ${years.at(-1)}`:'No records';}
 function buildChart(){const years=countBy(state.all,'year').sort((a,b)=>Number(a[0])-Number(b[0]));const chart=$('year-chart');chart.textContent='';if(!years.length){chart.textContent='No publication years available.';return;}const min=Number(years[0][0]),maxY=Number(years.at(-1)[0]), map=new Map(years);const top=Math.max(...years.map(x=>x[1]),1);for(let y=min;y<=maxY;y++){const n=map.get(y)||0;const slot=document.createElement('div');slot.className='year-slot';slot.title=`${y}: ${n} publication${n===1?'':'s'}`;slot.innerHTML=`<span class="year-number">${n||''}</span><div class="year-bar" style="height:${Math.max(3,n/top*123)}px"></div><span class="year-label">${y%2===0||maxY-min<12?y:''}</span>`;chart.append(slot);}chart.setAttribute('aria-label',years.map(([y,n])=>`${y}: ${n}`).join('; '));}
 function initializeFilters(){let years=[...new Set(state.all.map(x=>x.year).filter(Boolean))].sort((a,b)=>b-a);let journals=[...new Set(state.all.map(x=>x.journal).filter(Boolean))].sort((a,b)=>a.localeCompare(b));for(const y of years){let op=new Option(String(y),String(y));$('filter-year').append(op);}for(const j of journals){let op=new Option(j,j);$('filter-journal').append(op);}}
-function renderList(){const list=$('paper-list');list.textContent='';const visible=state.filtered.slice(0,state.shown);$('shown').textContent=`Showing ${visible.length} of ${state.filtered.length} matched publications (${state.all.length} PubMed records)`;if(!visible.length){list.innerHTML='<p class="empty">No publications match these filters.</p>';}
-for(const p of visible){let a=document.createElement('article');a.className='paper';let authors=(p.authors||[]).join(', ');let authorText=esc(authors).replace(/\bAlberto Montesanto\b/gi,'<strong>$&</strong>');a.innerHTML=`<div class="paper-top"><span class="pill">${esc(p.year||'Year unknown')}</span><span class="pill source-pill">PubMed indexed</span></div><h3><a target="_blank" rel="noopener" href="${esc(p.url)}">${esc(p.title)}</a></h3><p class="authors">${authorText}</p><p class="journal">${esc(p.journal||'Journal not listed')}</p><div class="links"><a target="_blank" rel="noopener" href="${esc(p.url)}">PubMed · PMID ${esc(p.pmid)}</a>${p.doi?`<a target="_blank" rel="noopener" href="${esc(doiUrl(p.doi))}">DOI: ${esc(p.doi)}</a>`:''}</div>`;list.append(a);}
+function renderList(){const list=$('paper-list');list.textContent='';const visible=state.filtered.slice(0,state.shown);$('shown').textContent=`Showing ${visible.length} of ${state.filtered.length} matched publications (${state.all.filter(r=>r.pmid).length} PubMed-indexed)`;if(!visible.length){list.innerHTML='<p class="empty">No publications match these filters.</p>';}
+for(const p of visible){let a=document.createElement('article');a.className='paper';let authors=(p.authors||[]).join(', ');let authorText=esc(authors).replace(/\bAlberto Montesanto\b/gi,'<strong>$&</strong>');a.innerHTML=`<div class="paper-top"><span class="pill">${esc(p.year||'Year unknown')}</span><span class="pill source-pill">${p.pmid ? "PubMed indexed" : "Published journal article"}</span></div><h3><a target="_blank" rel="noopener" href="${esc(p.url)}">${esc(p.title)}</a></h3><p class="authors">${authorText}</p><p class="journal">${esc(p.journal||'Journal not listed')}</p><div class="links">${p.pmid ? `<a target="_blank" rel="noopener" href="${esc(p.url)}">PubMed · PMID ${esc(p.pmid)}</a>` : `<a target="_blank" rel="noopener" href="${esc(p.url)}">Publisher · DOI</a>`}${p.doi?`<a target="_blank" rel="noopener" href="${esc(doiUrl(p.doi))}">DOI: ${esc(p.doi)}</a>`:''}</div>`;list.append(a);}
 $('show-more').hidden=state.shown>=state.filtered.length;}
 function applyFilters(){const q=state.query.toLowerCase();state.filtered=state.all.filter(p=>(!q||[p.title,p.journal,p.doi,p.pmid,...(p.authors||[])].join(' ').toLowerCase().includes(q))&&(!state.year||String(p.year)===state.year)&&(!state.journal||p.journal===state.journal));state.filtered.sort((a,b)=>state.sort==='title'?a.title.localeCompare(b.title):state.sort==='oldest'?(a.date||'').localeCompare(b.date||''):(b.date||'').localeCompare(a.date||''));state.shown=state.pageSize;renderList();}
 function setError(message){$('shown').textContent=message;$('paper-list').innerHTML='<p class="empty">The bibliography has not yet been imported. Run the PubMed importer from the Hugo project folder and deploy the generated data.</p>';}
 async function main(){ $('current-year').textContent=new Date().getFullYear();for(const id of ['search','filter-year','filter-journal','sort']){$(id).addEventListener(id==='search'?'input':'change',()=>{state.query=$('search').value.trim();state.year=$('filter-year').value;state.journal=$('filter-journal').value;state.sort=$('sort').value;applyFilters();});}$('show-more').addEventListener('click',()=>{state.shown+=state.pageSize;renderList();});
-try{const response=await fetch('/publications/data/publications.json',{cache:'no-cache'});if(!response.ok)throw new Error(`HTTP ${response.status}`);const raw=await response.json();if(!Array.isArray(raw.records)||!raw.records.length)throw new Error('No publication records');state.all=raw.records.filter(r=>r.pmid&&r.title&&r.status==='confirmed');setStats();buildChart();initializeFilters();applyFilters();$('sync-date').textContent=`PubMed data updated ${raw.last_updated||'—'}`;$('review-note').textContent=raw.review_count?`${raw.review_count} potentially ambiguous author records were withheld pending manual review.`:'';}catch(error){console.error('Publications data:',error);setError('Publication records unavailable');}}
+try{const response=await fetch('/publications/data/publications.json',{cache:'no-cache'});if(!response.ok)throw new Error(`HTTP ${response.status}`);const raw=await response.json();await mergeSupplementalPublications(raw);installCurrentPublicationsCsvDownload();if(!Array.isArray(raw.records)||!raw.records.length)throw new Error('No publication records');state.all=raw.records.filter(r=>r.title&&r.status==='confirmed'&&(r.pmid||r.doi));setStats();buildChart();initializeFilters();applyFilters();$('sync-date').textContent=`PubMed data updated ${raw.last_updated||'—'}`;$('review-note').textContent=raw.review_count?`${raw.review_count} potentially ambiguous author records were withheld pending manual review.`:'';}catch(error){console.error('Publications data:',error);setError('Publication records unavailable');}}
 main();
+
+
+/* BEGIN RDW SUPPLEMENTAL PUBLICATIONS */
+async function mergeSupplementalPublications(raw) {
+  if (!Array.isArray(raw.records)) throw new Error('Invalid publications data');
+  try {
+    const r = await fetch('/publications/data/publications_extra.json', {cache: 'no-cache'});
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const extra = await r.json();
+    if (!Array.isArray(extra.records)) throw new Error('Invalid supplemental publications');
+    const normalizeDOI = v => String(v || '').trim().toLowerCase().replace(/^https?:\/\/(?:dx\.)?doi\.org\//, '');
+    const known = new Set(raw.records.map(p => normalizeDOI(p.doi)).filter(Boolean));
+    for (const paper of extra.records) {
+      const doi = normalizeDOI(paper.doi);
+      if (!doi || known.has(doi) || !paper.title || paper.status !== 'confirmed') continue;
+      raw.records.push(paper);
+      known.add(doi);
+    }
+  } catch (error) {
+    console.warn('Supplemental publications unavailable:', error);
+  }
+}
+
+function installCurrentPublicationsCsvDownload() {
+  const el = document.querySelector('a.export[href*="publications.csv"]');
+  if (!el) return;
+  el.addEventListener('click', event => {
+    if (!state.all.length) return;
+    event.preventDefault();
+    const columns = ['year', 'title', 'authors', 'journal', 'doi', 'pmid', 'url'];
+    const field = value => '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
+    const body = [columns.join(',')];
+    for (const p of state.all) {
+      body.push(columns.map(k => field(k === 'authors' ? (p.authors || []).join(', ') : p[k])).join(','));
+    }
+    const blob = new Blob(['\ufeff' + body.join('\r\n')], {type: 'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'publications.csv';
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+  });
+}
+/* END RDW SUPPLEMENTAL PUBLICATIONS */
