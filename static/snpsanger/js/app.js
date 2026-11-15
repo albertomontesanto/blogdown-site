@@ -1,8 +1,11 @@
 import {parseAB1} from './abif.js';
-import {genotypeTrace,parseFasta,BASE_COLORS} from './genotype.js';
+import {genotypeTrace,parseFasta,BASE_COLORS} from './genotype.js?v=4.0';
 
 const el=id=>document.getElementById(id);
-const CACHE_KEY='sangersnp.reference.v3';
+// SANGERSNP_ALL_CHROMOSOMES_v4
+const CACHE_PREFIX='sangersnp.reference.v4.';
+const cacheKey=({chrom,pos,rsid})=>CACHE_PREFIX+`${chrom}:${pos}:${rsid}`;
+// SANGERSNP_NCBI_FIX_v4_1 — diagnostic messages for NCBI function
 const MAX_FILE_SIZE=20*1024*1024;
 let selectedFiles=[], verifiedReference=null, results=[], currentResult=-1;
 let resizeTimer=null;
@@ -12,10 +15,11 @@ function setNotice(id,text,kind='neutral') {
   const target=el(id);target.className=`notice ${kind}`;target.textContent=text;
 }
 function formValues() {
-  const chrom=el('chrom').value.trim().replace(/^chr/i,'');
+  const entered=el('chrom').value.trim().replace(/^chr/i,'').toUpperCase();
+  const chrom=/^\d+$/.test(entered)?String(Number(entered)):entered;
   const pos=Number(el('pos').value);
   const rsid=el('rsid').value.trim().toLowerCase();
-  if(!/^8$/.test(chrom)) throw new Error('Questa versione è dedicata al cromosoma 8.');
+  if(!/^(?:[1-9]|1\d|2[0-2]|X|Y)$/.test(chrom)) throw new Error('Cromosoma non valido: inserisci 1–22, X oppure Y (GRCh38).');
   if(!Number.isSafeInteger(pos)||pos<=0) throw new Error('Posizione SNP non valida.');
   if(!/^rs\d+$/.test(rsid)) throw new Error('rsID non valido.');
   return {chrom,pos,rsid};
@@ -29,7 +33,7 @@ function installReference(reference, message, store=false) {
   el('fasta').value=`>chr${reference.chrom}:${reference.start}-${reference.end} ${reference.build}\n${reference.sequence.match(/.{1,80}/g).join('\n')}`;
   setNotice('referenceStatus',message,reference.verified?'success':'neutral');
   if(store && reference.verified) {
-    try{localStorage.setItem(CACHE_KEY,JSON.stringify(reference));}catch {/* Private browsing or quota */}
+    try{localStorage.setItem(cacheKey(reference),JSON.stringify(reference));}catch {/* Private browsing or quota */}
   }
 }
 function getReference() {
@@ -56,10 +60,13 @@ el('fetchRef').addEventListener('click',async ()=>{
   el('fetchRef').disabled=true;
   setNotice('referenceStatus','Contatto NCBI dbSNP, verifico rsID/coordinate e scarico FASTA GRCh38…','pending');
   try {
-    const response=await fetch('/.netlify/functions/sangersnp-reference',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(input),signal:AbortSignal.timeout(55000)});
+    const response=await fetch('/.netlify/functions/sangersnp-reference',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify(input),signal:AbortSignal.timeout(55000)});
+    const raw=await response.text();
     let data;
-    try{data=await response.json();}catch {throw new Error(`Risposta del server Netlify non valida (HTTP ${response.status}). Controlla il deploy delle Functions.`);}
-    if(!response.ok || !data.ok) throw new Error(data.error || `Errore HTTP ${response.status}`);
+    try{data=JSON.parse(raw);}catch{
+      throw new Error(`Funzione Netlify non disponibile o risposta non JSON (HTTP ${response.status}). Verifica il deploy e apri /.netlify/functions/sangersnp-reference per controllare la versione.`);
+    }
+    if(!response.ok || !data.ok) throw new Error(`${data.error || 'Errore funzione Netlify'} (HTTP ${response.status}).`);
     installReference(data.reference,`Riferimento verificato da NCBI: ${data.reference.accession}:${data.reference.pos} · Alleli ${data.reference.alleles.join('/')} · Base di riferimento ${data.reference.ref_base}.`,true);
   } catch(e) {
     const friendly=e?.name==='TimeoutError'?'Tempo massimo scaduto: servizio NCBI lento. Usa un FASTA verificato o riprova.':e?.message;
@@ -69,8 +76,9 @@ el('fetchRef').addEventListener('click',async ()=>{
 
 el('cacheRef').addEventListener('click',()=>{
   try{
-    const cached=JSON.parse(localStorage.getItem(CACHE_KEY) ?? 'null');
-    if(!cached?.verified || !/^[ACGTN]{65,}$/.test(cached.sequence) || !Number.isSafeInteger(cached.start)) throw new Error('Nessun riferimento NCBI verificato salvato in questo browser.');
+    const current=formValues();
+    const cached=JSON.parse(localStorage.getItem(cacheKey(current)) ?? 'null');
+    if(!cached?.verified || !/^[ACGTN]{65,}$/.test(cached.sequence) || !Number.isSafeInteger(cached.start) || cached.chrom!==current.chrom || cached.pos!==current.pos || cached.rsid!==current.rsid) throw new Error('Nessun riferimento NCBI verificato per il cromosoma, la posizione e il rsID selezionati.');
     installReference(cached,'Riferimento verificato in precedenza, recuperato dalla cache di questo browser.');
   } catch(e){setNotice('referenceStatus',e.message,'error');}
 });
@@ -210,6 +218,10 @@ el('analyze').addEventListener('click',async()=>{
       if(file.size>MAX_FILE_SIZE) throw new Error('File superiore a 20 MB.');
       trace=parseAB1(await file.arrayBuffer());
       result=genotypeTrace(trace,reference,threshold);
+      // Sex chromosomes: report as provisional until sample ploidy is established.
+      if((reference.chrom==='X'||reference.chrom==='Y') && result.status==='OK'){
+        result={...result,status:'REVISIONE',reason:'Cromosoma sessuale: verificare sesso, ploidia e regione PAR/non-PAR prima di interpretare il genotipo.'};
+      }
     }catch(e){result={status:'NO CALL',genotype:'—',reason:e.message || 'Errore di lettura non specificato.'};}
     results.push({name:file.name,trace,result});processed++;
   }
@@ -229,7 +241,7 @@ el('exportCsv').addEventListener('click',()=>{
   const hdr=['File','Cromosoma','Posizione_GRCh38','rsID','Genotipo','Stato','Orientamento','Rapporto_picchi','Concordanza_percento','Phred','Picco_A','Picco_C','Picco_G','Picco_T','Riferimento_verificato','Motivo'];
   const lines=[hdr.map(csvValue).join(';')];
   let ref;
-  try{ref=getReference();}catch{ref={chrom:'8',pos:'',rsid:'',verified:false};}
+  try{ref=getReference();}catch{ref={chrom:'',pos:'',rsid:'',verified:false};}
   results.forEach(({name,result:r})=>{
     const values=[name,ref.chrom,ref.pos,ref.rsid,r.genotype,r.status,r.strand??'',r.peakRatio?.toFixed(3)??'',r.concordance?.toFixed(1)??'',r.phred??'',r.heights?.A??'',r.heights?.C??'',r.heights?.G??'',r.heights?.T??'',ref.verified?'SI':'NO',r.reason];
     lines.push(values.map(csvValue).join(';'));

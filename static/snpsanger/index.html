@@ -55,7 +55,7 @@
     <header class="header">
       <div class="mark" aria-hidden="true"><svg viewBox="0 0 36 36"><path d="M10 4c14 8 2 19 16 28M26 4C12 12 24 23 10 32M12 10h12M11 18h14M12 26h12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" /></svg></div>
       <div class="header-title"><span class="eyebrow">STRUMENTI DI ANALISI GENETICA</span><h1>Sanger <span>SNP</span></h1><p>Genotipizzazione da cromatogrammi AB1 · Analisi nel browser</p></div>
-      <span class="app-version">WEB v3.2 <span class="version-dot"></span></span>
+      <span class="app-version">WEB v4.1 <span class="version-dot"></span></span>
     </header>
     <div class="pills"><span>GRCh38 / hg38</span><span><svg class="mini-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> AB1 elaborati in locale</span>
     <a class="snpsanger-home-link" href="/author/admin/" aria-label="Torna alla Home">
@@ -67,7 +67,7 @@
       <section class="panel" aria-labelledby="ref-title">
         <div class="panel-head"><span class="step">01</span><div><h2 id="ref-title">Riferimento genomico</h2><p>Verifica il polimorfismo con NCBI dbSNP e recupera la sequenza FASTA tramite EFetch.</p></div></div>
         <div class="field-grid">
-          <label>Cromosoma<input id="chrom" type="text" value="8" inputmode="text" spellcheck="false" aria-label="Cromosoma" /></label>
+          <label>Cromosoma (1–22, X, Y)<input id="chrom" type="text" value="8" inputmode="text" spellcheck="false" aria-label="Cromosoma" /></label>
           <label>Posizione (1-based)<input id="pos" type="number" value="46830810" min="1" step="1" aria-label="Posizione genomica" /></label>
           <label>Inizio FASTA (1-based)<input id="start" type="number" min="1" step="1" placeholder="automatico" aria-label="Inizio FASTA" /></label>
         </div>
@@ -75,7 +75,7 @@
         <div class="actions"><button type="button" id="fetchRef" class="primary"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v4h14v-4"/></svg> Recupera da NCBI dbSNP</button><button type="button" id="cacheRef" class="secondary">Usa cache locale</button></div>
         <div id="referenceStatus" class="notice neutral" role="status" aria-live="polite">Inserisci il riferimento tramite NCBI oppure incolla manualmente un FASTA verificato.</div>
         <label class="field">Sequenza di riferimento <small>(FASTA o ACGT)</small><textarea id="fasta" rows="7" spellcheck="false" placeholder=">chr8:46830310-46831310 GRCh38&#10;ACGT...&#10;&#10;Per un FASTA manuale, indica la prima coordinata nel campo Inizio FASTA."></textarea></label>
-        <p class="helper">L’app usa <strong>GRCh38/hg38</strong>. Con un FASTA manuale la corrispondenza tra rsID, sequenza e coordinate <strong>non è verificata</strong> automaticamente.</p>
+        <p class="helper">L’app usa <strong>GRCh38/hg38</strong> sui cromosomi 1–22, X e Y. Con un FASTA manuale la corrispondenza tra rsID, sequenza e coordinate <strong>non è verificata</strong> automaticamente.</p>
       </section>
       <section class="panel" aria-labelledby="files-title">
         <div class="panel-head"><span class="step">02</span><div><h2 id="files-title">Importa i cromatogrammi</h2><p>Seleziona uno o più file AB1 per l’analisi automatica dei picchi.</p></div></div>
@@ -94,6 +94,6 @@
     </section>
     <footer><span>Sanger SNP Web · Ricerca / supporto all’interpretazione</span><span>Non è un dispositivo diagnostico · Verificare le chiamate sui picchi e con controlli noti</span></footer>
   </div>
-  <script type="module" src="./js/app.js?v=3.2.20261113"></script>
+  <script type="module" src="./js/app.js?v=4.1.20261115"></script>
 </body>
 </html>
