@@ -21,6 +21,29 @@
   .gai-page .gai-card p{font-size:.95rem;line-height:1.65;color:var(--gai-muted);margin:0}
   .gai-page .gai-note{background:#f3f8f7;border-left:4px solid #289478;border-radius:0 12px 12px 0;padding:1.2rem 1.3rem;margin-top:1.65rem;color:#2f5860;line-height:1.75}
   @media(max-width:790px){.gai-page .gai-hero{grid-template-columns:1fr;gap:1rem;padding:1.3rem}.gai-page .gai-image{padding:0}.gai-page .gai-image img{max-width:260px}.gai-page .gai-cards{grid-template-columns:1fr}.gai-page .gai-name{font-size:2.7rem}}
+
+  /* GENEALOGYAI_COMPACT_HERO_20261117 -- modifica mirata alla sola introduzione */
+  .gai-page .gai-hero {
+    grid-template-columns: minmax(125px, 190px) minmax(0, 1fr);
+    gap: 1.35rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: 18px;
+  }
+  .gai-page .gai-image { padding: 0; }
+  .gai-page .gai-image img { width: 100%; max-width: 185px; height: auto; border-radius: 12px; }
+  .gai-page .gai-eyebrow { font-size: .68rem; letter-spacing: .12em; margin-bottom: .35rem; }
+  .gai-page .gai-name { font-size: clamp(1.75rem, 3vw, 2.4rem); line-height: 1.1; margin: 0 0 .55rem; }
+  .gai-page .gai-lead { font-size: .98rem; line-height: 1.45; margin: 0 0 .8rem; max-width: 60ch; }
+  .gai-page .gai-tags { gap: .4rem; margin: 0 0 .85rem; }
+  .gai-page .gai-tag { padding: .28rem .55rem; font-size: .73rem; }
+  .gai-page .gai-home { padding: .48rem .8rem; font-size: .85rem; }
+  @media (max-width: 790px) {
+    .gai-page .gai-hero { grid-template-columns: 1fr; gap: .65rem; padding: 1rem 1.1rem; }
+    .gai-page .gai-image img { max-width: 135px; }
+    .gai-page .gai-name { font-size: 1.95rem; }
+    .gai-page .gai-eyebrow { margin-top: .15rem; }
+  }
+
 </style>
 <section class="gai-page" aria-label="GenealogyAI software">
   <div class="gai-hero">
