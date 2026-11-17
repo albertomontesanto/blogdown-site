@@ -52,6 +52,31 @@
   .dark .unical-contact__field,.dark-mode .unical-contact__field{color:#b4c2d2}
   .dark .unical-contact a:not(.unical-contact__email-btn),
   .dark-mode .unical-contact a:not(.unical-contact__email-btn){color:#92c4ff}
+
+  /* CONTACT_GOOGLE_MAP_STYLES */
+  .unical-contact__location {margin-top:1.25rem;}
+  .unical-contact__location-top {display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;}
+  .unical-contact__location-title {margin:0 0 .4rem;font-size:1.3rem;font-weight:750;color:#173d70;}
+  .unical-contact__address {font-style:normal;line-height:1.75;color:#415670;}
+  .unical-contact__address strong {color:#233e5d;}
+  .unical-contact__location-actions {display:flex;gap:.65rem;flex-wrap:wrap;}
+  .unical-contact a.unical-contact__map-button {display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.7rem 1rem;border-radius:10px;
+      font-size:.92rem;font-weight:700;text-decoration:none!important;background:#214c82;color:#fff!important;border:1px solid #214c82;}
+  .unical-contact a.unical-contact__map-button--light {color:#214c82!important;background:#edf4ff;border-color:#cadcf3;}
+  .unical-contact a.unical-contact__map-button:hover {background:#16395f;color:#fff!important;}
+  .unical-contact a.unical-contact__map-button--light:hover {background:#dfebfc;color:#16395f!important;}
+  .unical-contact__map-frame {display:block;width:100%;height:380px;border:0;border-radius:14px;background:#eaf1f9;}
+  .unical-contact__map-note {font-size:.88rem;color:#64758a;line-height:1.55;margin:.85rem 0 0;}
+  @media(max-width:760px) {
+    .unical-contact__map-frame {height:310px;}
+    .unical-contact__location-actions {width:100%;}
+    .unical-contact a.unical-contact__map-button {flex:1 1 150px;}
+  }
+  .dark .unical-contact__location-title,.dark-mode .unical-contact__location-title,
+  .dark .unical-contact__address strong,.dark-mode .unical-contact__address strong {color:#f0f6ff;}
+  .dark .unical-contact__address,.dark-mode .unical-contact__address,
+  .dark .unical-contact__map-note,.dark-mode .unical-contact__map-note {color:#c4d0e0;}
+
 </style>
 <section class="unical-contact" aria-label="Professional contact information">
   <div class="unical-contact__lead">
@@ -74,7 +99,7 @@
         <div>
           <p class="unical-contact__field">Institution</p>
           <p class="unical-contact__value">Department of Biology, Ecology and Earth Sciences<br>
-          University of Calabria<br>87036 Rende, Italy</p>
+          University of Calabria<br>Via Pietro Bucci, Cubo 6C — Ground Floor<br>87036 Rende (CS), Italy</p>
         </div>
       </div>
       <div class="unical-contact__detail">
@@ -111,4 +136,34 @@
       </div>
     </div>
   </div>
+
+  <!-- CONTACT_GOOGLE_MAP_START -->
+  <section class="unical-contact__card unical-contact__location" aria-labelledby="contact-office-title">
+    <div class="unical-contact__location-top">
+      <div>
+        <h3 class="unical-contact__location-title" id="contact-office-title">Office location</h3>
+        <address class="unical-contact__address">
+          <strong>Applied Human and Forensic Genetics Laboratory</strong><br>
+          Department of Biology, Ecology and Earth Sciences<br>
+          University of Calabria<br>
+          Via Pietro Bucci, <strong>Cubo 6C — Ground Floor (Level 0)</strong><br>
+          87036 Rende (CS), Italy
+        </address>
+      </div>
+      <div class="unical-contact__location-actions">
+        <a class="unical-contact__map-button" href="https://www.google.com/maps/dir/?api=1&destination=Cubo%206C%2C%20Via%20Pietro%20Bucci%2C%20Universit%C3%A0%20della%20Calabria%2C%2087036%20Rende%20CS%2C%20Italia" target="_blank" rel="noopener noreferrer" aria-label="Get directions to Cubo 6C using Google Maps">◈ Directions</a>
+        <a class="unical-contact__map-button unical-contact__map-button--light" href="https://www.google.com/maps/search/?api=1&query=Cubo%206C%2C%20Via%20Pietro%20Bucci%2C%20Universit%C3%A0%20della%20Calabria%2C%2087036%20Rende%20CS%2C%20Italia" target="_blank" rel="noopener noreferrer">↗ Open in Google Maps</a>
+      </div>
+    </div>
+    <iframe
+      class="unical-contact__map-frame"
+      title="Google Maps — University of Calabria, Cubo 6C, Rende"
+      src="https://maps.google.com/maps?q=Cubo%206C%2C%20Via%20Pietro%20Bucci%2C%20Universit%C3%A0%20della%20Calabria%2C%2087036%20Rende%20CS%2C%20Italia&z=17&output=embed"
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+      allowfullscreen></iframe>
+    <p class="unical-contact__map-note">The office is on the ground floor of Cubo 6C. Google Maps may show the building or the surrounding campus rather than the exact entrance.</p>
+  </section>
+  <!-- CONTACT_GOOGLE_MAP_END -->
+
 </section>
