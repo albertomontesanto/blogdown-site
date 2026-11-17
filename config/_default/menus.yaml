@@ -36,12 +36,11 @@ main:
     url: /snpsanger/
     weight: 30
 
-
- - name: Klotho-Sanger
+  - name: Klotho-Sanger
     parent: software
     url: /klotho-sanger/
     weight: 35
-    
+
   - name: Visualizations
     parent: software
     url: /visualizations/
