@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Klotho-Sanger: analisi dei tre SNP del gene KLOTHO associati all'aplotipo KL-VS da cromatogrammi AB1.">
+  <title>Klotho-Sanger · KL-VS haplotype analysis</title>
+  <link rel="stylesheet" href="./styles.css?v=1.0">
+  <script type="module" src="./js/app.js?v=1.0"></script>
+</head>
+<body>
+  <header class="ks-nav">
+    <div class="ks-nav-inner">
+      <a class="ks-brand" href="/author/admin/">Alberto Montesanto</a>
+      <button id="nav-toggle" class="ks-toggle" type="button" aria-label="Apri navigazione" aria-expanded="false" aria-controls="nav-links"><span></span><span></span><span></span></button>
+      <nav id="nav-links" aria-label="Navigazione principale">
+        <a href="/author/admin/">Home</a>
+        <a href="/publications/">Publications</a>
+        <a href="/courses/">Teaching</a>
+        <a href="/project/">Projects</a>
+        <div class="ks-drop">
+          <button type="button" id="software-toggle" aria-expanded="false" aria-controls="software-links">Software <span aria-hidden="true">▾</span></button>
+          <div id="software-links" class="ks-drop-items">
+            <a href="/genealogy/">Genealogy</a>
+            <a href="/irisplex/">IrisPlex</a>
+            <a href="/snpsanger/">SNPSanger</a>
+            <a class="current" href="/klotho-sanger/" aria-current="page">Klotho-Sanger</a>
+            <a href="/visualizations/">Visualizations</a>
+          </div>
+        </div>
+        <a href="/contact/">Contacts</a>
+      </nav>
+    </div>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <div class="hero-mark" aria-hidden="true"><svg viewBox="0 0 80 80"><path d="M24 14C60 20 20 38 56 46M56 14C20 20 60 38 24 46M24 46C60 54 20 64 56 70M56 46C20 54 60 64 24 70" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M29 22h22M26 32h28M27 43h26M29 54h22M29 64h22" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></div>
+      <div class="hero-body">
+        <p class="eyebrow">KLOTHO · EXON 2 · GENETICA DELL'INVECCHIAMENTO</p>
+        <h1>Klotho<span>-Sanger</span></h1>
+        <p class="hero-sub">Genotipizzazione dei marcatori KL-VS da elettroferogrammi Sanger AB1</p>
+        <div class="badges"><span>GRCh38 / hg38</span><span>chr13</span><span>3 SNP</span><span>AB1 elaborati nel browser</span></div>
+      </div>
+      <a class="home-btn" href="/author/admin/">⌂ <span>Torna alla Home</span></a>
+    </section>
+    <section class="panel intro-panel">
+      <div class="section-heading"><span class="step-icon">i</span><div><h2>Il sistema KL-VS</h2><p>Tre marcatori nell'esone 2, due sostituzioni aminoacidiche e un marcatore sinonimo associato.</p></div></div>
+      <div class="site-list">
+        <div><strong>rs9536314</strong><span>F352V · T/G</span><small>Missenso</small></div>
+        <div><strong>rs9527025</strong><span>C370S · G/C</span><small>Missenso</small></div>
+        <div><strong>rs9527026</strong><span>K385K · G/A</span><small>Sinonima</small></div>
+      </div>
+      <p class="explain">La classificazione distingue <strong>KL-FC/KL-FC</strong> (0 copie), <strong>KL-FC/KL-VS compatibile</strong> (1 copia, fase non risolta) e <strong>KL-VS/KL-VS</strong> (2 copie). Genotipi discordanti o letture insufficienti non vengono forzati in una classe.</p>
+    </section>
+    <div class="work-grid">
+      <section class="panel work-panel" id="ref-panel">
+        <div class="section-heading"><span class="step-icon">01</span><div><h2>Riferimento genomico</h2><p>Scarica la sequenza GRCh38 da NCBI oppure importa un FASTA verificato.</p></div></div>
+        <div class="ref-meta"><span class="caps">REGIONE</span><strong>chr13 · KL, esone 2</strong><span class="caps">REFSEQ</span><strong>NC_000013.11</strong></div>
+        <button class="primary" id="ncbi-btn" type="button">↓ Recupera FASTA da NCBI</button>
+        <div id="reference-status" class="notice info" role="status" aria-live="polite">Nessun riferimento caricato. Il server scaricherà soltanto DNA di riferimento pubblico, non i file AB1.</div>
+        <div class="reference-foot"><span id="ref-pill" class="pill gray">Da caricare</span><small id="reference-desc">Nessun riferimento caricato</small></div>
+        <details class="manual"><summary>Usa un FASTA manuale / modalità offline</summary>
+          <label for="fasta-start">Prima coordinata genomica (1-based, GRCh38)</label>
+          <input id="fasta-start" type="number" min="1" value="33053770" step="1">
+          <label for="manual-fasta">Sequenza FASTA (+ strand, cromosoma 13)</label>
+          <textarea id="manual-fasta" rows="6" placeholder=">chr13:33053770-33054300 GRCh38&#10;ACGT..."></textarea>
+          <button type="button" class="secondary" id="manual-load">Usa questo FASTA</button>
+          <p class="hint">La sequenza deve comprendere tutti e tre gli SNP e mostrare T/G/G alle rispettive coordinate di riferimento. Il programma non può certificare la provenienza di un FASTA manuale.</p>
+        </details>
+      </section>
+      <section class="panel work-panel">
+        <div class="section-heading"><span class="step-icon">02</span><div><h2>Carica i cromatogrammi</h2><p>Seleziona uno o più file AB1. Le letture possono essere Forward o Reverse.</p></div></div>
+        <label class="drop-zone" id="drop-zone" for="ab1-files"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M12 16V3m0 0L7 8m5-5 5 5M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><strong>Trascina o seleziona file .ab1</strong><small>Fino a 100 file · massimo 20 MB per file</small><input id="ab1-files" type="file" accept=".ab1,.AB1" multiple hidden></label>
+        <p class="selection" id="files-selected">Nessun file selezionato</p>
+        <div class="threshold"><label for="threshold">Soglia orientativa di eterozigosi <strong id="threshold-value">0,28</strong></label><input id="threshold" type="range" min="0.16" max="0.55" step="0.01" value="0.28"></div>
+        <p class="hint">La soglia confronta il picco minore con quello maggiore degli alleli attesi. Non equivale a una probabilità di genotipo.</p>
+        <div class="action-row"><button type="button" class="primary" id="analyze-btn">Analizza tutti i file</button><span class="file-count"><strong id="count-files">0</strong> file</span></div>
+        <p class="progress" id="progress" role="status" aria-live="polite"></p>
+      </section>
+    </div>
+    <section class="panel result-panel" id="results" hidden>
+      <div class="result-header"><div><p class="eyebrow">RISULTATI DELL'ANALISI</p><h2>Genotipi e classificazione KL-VS</h2><p>Seleziona un campione per visualizzare i tre elettroferogrammi.</p></div><div class="result-actions"><span id="result-counter" class="pill blue"></span><button type="button" class="secondary" id="export-summary">↓ Riepilogo CSV</button><button type="button" class="secondary" id="export-detail">↓ Dettaglio SNP CSV</button></div></div>
+      <div class="table-scroll"><table><thead><tr><th>Campione / AB1</th><th>F352V<br><small>rs9536314</small></th><th>C370S<br><small>rs9527025</small></th><th>K385K<br><small>rs9527026</small></th><th>KL-VS</th><th>QC</th></tr></thead><tbody id="results-body"></tbody></table></div>
+      <div class="chart-heading"><h3 id="trace-title">Cromatogrammi</h3><p id="trace-note"></p><div class="chart-legend"><span><i style="background:#159b73"></i>A</span><span><i style="background:#297bd8"></i>C</span><span><i style="background:#364152"></i>G</span><span><i style="background:#ed5965"></i>T</span><span><i style="background:#855ad8"></i>SNP</span></div></div>
+      <div id="charts" class="charts"></div>
+    </section>
+    <div class="disclaimer"><strong>Uso di ricerca.</strong> Le chiamate sono preliminari e richiedono conferma visiva, verifica degli alleli di riferimento e controlli sperimentali. Nei soggetti con più siti eterozigoti, il Sanger convenzionale non risolve necessariamente la fase allelica. Nessun file AB1 viene inviato al server.</div>
+    <footer>KL-VS haplotype analysis · <a href="https://www.ncbi.nlm.nih.gov/snp/rs9536314" target="_blank" rel="noopener noreferrer">dbSNP</a> · <a href="https://www.ncbi.nlm.nih.gov/books/NBK25499/" target="_blank" rel="noopener noreferrer">NCBI EFetch</a> · <a href="/author/admin/">Home</a></footer>
+  </main>
+  <script>
+    (()=>{const menu=document.getElementById('nav-links'),toggle=document.getElementById('nav-toggle'),software=document.getElementById('software-toggle'),drop=software.parentElement;
+      toggle.addEventListener('click',()=>{const open=menu.classList.toggle('expanded');toggle.setAttribute('aria-expanded',String(open));});
+      software.addEventListener('click',()=>{const open=drop.classList.toggle('open');software.setAttribute('aria-expanded',String(open));});
+      document.addEventListener('click',e=>{if(!drop.contains(e.target)){drop.classList.remove('open');software.setAttribute('aria-expanded','false');}});
+      document.addEventListener('keydown',e=>{if(e.key==='Escape'){drop.classList.remove('open');menu.classList.remove('expanded');software.setAttribute('aria-expanded','false');toggle.setAttribute('aria-expanded','false');}});
+    })();
+  </script>
+</body>
+</html>
