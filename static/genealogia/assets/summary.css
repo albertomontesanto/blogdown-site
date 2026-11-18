@@ -1,15 +1,109 @@
-
-.summary-section{padding-top:14px;padding-bottom:18px}
-.summary-panel{background:#eff0ee;border:1px solid #dde1db;border-radius:12px;padding:34px 28px 24px;box-shadow:0 4px 18px rgba(23,58,50,.035)}
-.summary-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:24px}
-.summary-head h2{margin:8px 0 0;font:400 clamp(36px,4vw,58px)/1.02 var(--serif);letter-spacing:-.03em;color:#173a32}
-.summary-head h2 em{font-style:italic;color:#406b5a}
-.summary-head p{max-width:580px;margin:0;color:#66766f;font-size:14px;line-height:1.7}
-.summary-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;border-top:1px solid #d4d9d2}
-.summary-card{padding:28px 18px 20px;border-right:1px solid #d4d9d2;min-height:132px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
-.summary-card:last-child{border-right:none}
-.summary-value{font-size:clamp(38px,4vw,60px);line-height:1;font-weight:500;color:#5d8600;letter-spacing:-.045em;font-variant-numeric:tabular-nums}
-.summary-label{margin-top:18px;font-size:13px;line-height:1.35;font-weight:500;color:#4a604b}
-@media (max-width:1180px){.summary-grid{grid-template-columns:repeat(3,minmax(0,1fr));border-left:none}.summary-card:nth-child(3n){border-right:none}.summary-card:nth-child(n+4){border-top:1px solid #d4d9d2}}
-@media (max-width:760px){.summary-panel{padding:28px 18px 18px}.summary-head{flex-direction:column;align-items:flex-start;margin-bottom:18px}.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.summary-card{min-height:120px;padding:22px 14px 16px}.summary-card:nth-child(3n){border-right:1px solid #d4d9d2}.summary-card:nth-child(2n){border-right:none}.summary-card:nth-child(n+3){border-top:1px solid #d4d9d2}.summary-value{font-size:clamp(32px,10vw,52px)}.summary-label{margin-top:14px;font-size:12px}}
-@media (max-width:460px){.summary-grid{grid-template-columns:1fr}.summary-card,.summary-card:nth-child(3n),.summary-card:nth-child(2n){border-right:none}.summary-card + .summary-card{border-top:1px solid #d4d9d2}.summary-card{min-height:96px;padding:18px 8px 14px}.summary-value{font-size:34px}.summary-label{margin-top:10px}}
+/* Radici di Calabria — riepilogo dinamico v2
+   Corregge la sovrapposizione dei numeri a sei colonne.
+   Solo CSS: i dati e la logica dei filtri rimangono invariati. */
+.summary-section {
+  padding-top: 14px;
+  padding-bottom: 18px;
+}
+.summary-panel {
+  background: #eff0ee;
+  border: 1px solid #dde1db;
+  border-radius: 12px;
+  padding: 34px 28px 24px;
+  box-shadow: 0 4px 18px rgba(23,58,50,.035);
+}
+.summary-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.summary-head h2 {
+  margin: 8px 0 0;
+  font: 400 clamp(34px, 3.6vw, 58px)/1.04 var(--serif, Georgia, serif);
+  letter-spacing: -.03em;
+  color: #173a32;
+}
+.summary-head h2 em { font-style: italic; color: #406b5a; }
+.summary-head p {
+  max-width: 580px;
+  margin: 0;
+  color: #66766f;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  border-top: 1px solid #d4d9d2;
+}
+.summary-card {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 144px;
+  padding: 26px 12px 20px;
+  border-right: 1px solid #d4d9d2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+.summary-card:last-child { border-right: 0; }
+.summary-value {
+  max-width: 100%;
+  font-family: var(--sans, 'DM Sans', system-ui, sans-serif);
+  font-size: clamp(28px, 2.12vw, 42px);
+  line-height: 1.12;
+  font-weight: 500;
+  color: #5d8600;
+  letter-spacing: -.045em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.summary-card:last-child .summary-value {
+  font-size: clamp(25px, 1.83vw, 36px);
+  letter-spacing: -.035em;
+}
+.summary-label {
+  margin-top: 14px;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #4a604b;
+}
+/* Su laptop/tablet si privilegia la leggibilità anziché comprimere i numeri. */
+@media (max-width: 1380px) {
+  .summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .summary-card { min-height: 136px; padding: 24px 18px 20px; }
+  .summary-card:nth-child(3n) { border-right: 0; }
+  .summary-card:nth-child(n+4) { border-top: 1px solid #d4d9d2; }
+  .summary-value { font-size: clamp(34px, 3.6vw, 48px); }
+  .summary-card:last-child .summary-value { font-size: clamp(29px, 3.1vw, 43px); }
+}
+@media (max-width: 760px) {
+  .summary-panel { padding: 27px 18px 18px; }
+  .summary-head { flex-direction: column; align-items: flex-start; margin-bottom: 18px; }
+  .summary-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .summary-card { min-height: 118px; padding: 20px 12px 17px; }
+  .summary-card:nth-child(3n) { border-right: 1px solid #d4d9d2; }
+  .summary-card:nth-child(2n) { border-right: 0; }
+  .summary-card:nth-child(n+3) { border-top: 1px solid #d4d9d2; }
+  .summary-value { font-size: clamp(28px, 6vw, 40px); }
+  .summary-card:last-child .summary-value { font-size: clamp(23px, 5.1vw, 34px); }
+  .summary-label { margin-top: 11px; }
+}
+@media (max-width: 460px) {
+  .summary-grid { grid-template-columns: 1fr; }
+  .summary-card,
+  .summary-card:nth-child(3n),
+  .summary-card:nth-child(2n) {
+    border-right: 0;
+    min-height: 90px;
+    padding: 18px 9px 15px;
+  }
+  .summary-card + .summary-card { border-top: 1px solid #d4d9d2; }
+  .summary-value { font-size: 36px; }
+  .summary-card:last-child .summary-value { font-size: 33px; }
+  .summary-label { margin-top: 8px; }
+}
