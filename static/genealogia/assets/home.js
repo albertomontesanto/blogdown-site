@@ -22,7 +22,7 @@
   function card(town, idx) {
     const a = document.createElement('a');
     a.className = `town-card town-card-archivio tone-${town.cover || 'terra'}`;
-    a.href = `rete.html?comune=${encodeURIComponent(town.slug)}`;
+    a.href = town.slug === 'cariati' ? 'esplora.html?comune=cariati' : `rete.html?comune=${encodeURIComponent(town.slug)}`;
     a.setAttribute('aria-label', `${town.nome}, ${town.ready ? 'esplora rete' : 'rete in preparazione'}`);
 
     // Dati dell'archivio, mostrati solo quando disponibili nel catalogo.

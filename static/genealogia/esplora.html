@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#193e35">
+  <meta name="description" content="Esplora nomi, famiglie e legami storici nell'archivio genealogico digitale di Cariati.">
+  <title>Esplora la rete | Radici di Calabria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/esplora.css?v=1">
+  <script defer src="assets/esplora.js?v=1"></script>
+</head>
+<body>
+  <a class="skip-link" href="#appMain">Vai ai contenuti</a>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="index.html" aria-label="Radici di Calabria, torna al portale">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 30V15m0 6L9 12m9 9 9-13M9 12l-4-5m4 5-1 7m19-11 5-3m-5 3 3 8M10 31h16"/></svg>
+        </span>
+        <span class="brand-copy"><strong>radici<span class="brand-dot">.</span>calabria</strong><small>Archivio genealogico digitale</small></span>
+      </a>
+      <nav class="toplinks" aria-label="Navigazione">
+        <a href="index.html#comuni">Tutti i comuni</a>
+        <a href="rete.html?comune=cariati" id="legacyLink" target="_blank" rel="noopener">Visualizzatore originale <span aria-hidden="true">↗</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <div id="loadingView" class="shell loading" role="status" aria-live="polite">
+    <div class="loading-line"></div><div class="loading-line short"></div>
+    <p>Caricamento dell'archivio genealogico…</p>
+  </div>
+  <div id="errorView" class="shell error-view" hidden role="alert"></div>
+
+  <div id="appMain" hidden>
+    <section class="intro shell">
+      <div class="breadcrumbs"><a href="index.html">Archivio</a><span aria-hidden="true">/</span><span id="crumbProvince">Provincia di Cosenza</span><span aria-hidden="true">/</span><strong id="crumbTown">Cariati</strong></div>
+      <div class="intro-grid">
+        <div>
+          <div class="eyebrow"><span class="eyebrow-rule"></span> RETE GENEALOGICA · CALABRIA</div>
+          <h1 id="townTitle">Cariati<span class="title-mark">.</span></h1>
+          <p class="intro-description">Un archivio da esplorare per nome, famiglia e generazione. Ogni collegamento proviene dalle relazioni presenti nell'esportazione genealogica originale.</p>
+        </div>
+        <div class="intro-aside"><span class="meta-label">CONSULTAZIONE</span><strong>Persone, famiglie, relazioni.</strong><p>Ricerca una persona e segui i legami documentati, passando da una generazione all'altra.</p></div>
+      </div>
+      <div class="stats" aria-label="Statistiche dell'archivio pubblico">
+        <div><strong id="statPeople">—</strong><span>Profili disponibili</span></div>
+        <div><strong id="statFamilies">—</strong><span>Nuclei con relazioni</span></div>
+        <div><strong id="statOriginal">—</strong><span>Persone nell'archivio originale</span></div>
+        <div class="stats-period"><strong id="statPeriod">1720–1910</strong><span id="periodLabel">Intervallo storico dei dati di Cariati</span></div>
+      </div>
+    </section>
+
+    <main class="workspace shell">
+      <aside class="directory" aria-label="Ricerca genealogica">
+        <div class="side-head"><div><span class="section-label">01 / CONSULTAZIONE</span><h2>Cerca una persona</h2></div><p>Puoi cercare per nome, cognome o identificativo GEDCOM.</p></div>
+        <label for="personSearch" class="field-label">NOME O COGNOME</label>
+        <div class="search-field"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5" stroke-linecap="round"/></svg><input id="personSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Es. Rossi, Maria, I123..."><kbd>/</kbd></div>
+        <div class="filter-row">
+          <label for="filterPeriod">PERIODO DI NASCITA<select id="filterPeriod"><option value="all">Tutti i periodi</option><option value="before1800">Prima del 1800</option><option value="1800">1800–1849</option><option value="1850">1850–1899</option><option value="1900">1900–1906</option><option value="unknown">Senza nascita datata</option></select></label>
+          <label for="filterGender">SESSO<select id="filterGender"><option value="all">Tutti</option><option value="0">Uomini</option><option value="1">Donne</option></select></label>
+        </div>
+        <div class="quick-surnames"><div class="list-overline">COGNOMI FREQUENTI</div><div id="surnameChips" class="surname-chips" aria-label="Cerca per cognome"></div></div>
+        <div class="result-heading"><span id="resultsCount" aria-live="polite">— risultati</span><button id="resetFilters" type="button" class="text-button">Azzera filtri</button></div>
+        <div id="peopleResults" class="people-results" aria-label="Risultati persone"></div>
+        <button id="moreResults" type="button" class="more-button" hidden>Mostra altri risultati <span aria-hidden="true">↓</span></button>
+      </aside>
+
+      <section class="details" aria-label="Scheda genealogica">
+        <div id="welcomePanel" class="welcome">
+          <span class="section-label">02 / ESPLORA LA RETE</span>
+          <div class="welcome-head"><div><h2>Le storie iniziano<br>da un <em>nome.</em></h2><p>Seleziona una persona dalla ricerca per visualizzare l'albero genealogico, le relazioni familiari e i collegamenti tra generazioni.</p></div><div class="welcome-mark" aria-hidden="true"><svg viewBox="0 0 220 160" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M110 36V73M48 73h124M48 73v27m124-27v27M110 107v20M58 127h104m-104 0v15m104-15v15"/><rect x="75" y="10" width="70" height="26" rx="4"/><rect x="14" y="100" width="69" height="27" rx="4"/><rect x="137" y="100" width="69" height="27" rx="4"/><rect x="84" y="75" width="52" height="32" rx="4"/><circle cx="58" cy="147" r="6"/><circle cx="162" cy="147" r="6"/></svg></div></div>
+          <div class="welcome-steps"><div><span>01</span><strong>Cerca</strong><p>Trova una persona tramite nome o cognome.</p></div><div><span>02</span><strong>Esplora</strong><p>Seleziona genitori, coniugi e discendenti.</p></div><div><span>03</span><strong>Collega</strong><p>Verifica i percorsi presenti nella rete.</p></div></div>
+          <div class="privacy-note"><strong>Consultazione pubblica selettiva</strong><p id="privacySummary">L'archivio mostra soltanto i profili che superano il filtro storico prudenziale. Alcuni collegamenti possono risultare incompleti.</p></div>
+        </div>
+
+        <div id="profilePanel" hidden>
+          <div class="profile-topline"><span class="section-label">02 / SCHEDA PERSONA</span><button class="back-button" id="closeProfile" type="button">← Torna all'esplorazione</button></div>
+          <div class="profile-head"><div class="profile-head-main"><span class="profile-type" id="profileType">SCHEDA BIOGRAFICA</span><h2 id="profileName">—</h2><div class="life-row"><span id="profileLife">—</span><span class="middle-dot" aria-hidden="true">·</span><span id="profileID">—</span></div></div><div class="profile-actions"><button id="copyProfile" type="button" class="outline-button" title="Copia il collegamento a questa persona">Copia link</button></div></div>
+          <div class="tabbar" role="tablist" aria-label="Visualizzazioni della persona">
+            <button id="tabTree" class="tab active" type="button" role="tab" aria-selected="true" data-tab="tree">Albero genealogico</button>
+            <button id="tabRelations" class="tab" type="button" role="tab" aria-selected="false" data-tab="relations">Relazioni e date</button>
+            <button id="tabPath" class="tab" type="button" role="tab" aria-selected="false" data-tab="path">Trova collegamento</button>
+          </div>
+          <section id="panelTree" class="tab-panel" role="tabpanel" aria-labelledby="tabTree">
+            <div class="panel-heading"><div><h3>Albero familiare</h3><p>Fino a due generazioni prima e dopo la persona selezionata. Clicca su un nodo per proseguire.</p></div><button id="resetTree" type="button" class="mini-button">Centra la vista</button></div>
+            <div id="treeScroll" class="tree-scroll" tabindex="0" aria-label="Albero genealogico scorrevole"><div id="treeCanvas" class="tree-canvas"></div></div>
+            <div class="tree-legend"><span><i class="legend-line"></i> Relazione genitore–figlio</span><span><i class="legend-line dashed"></i> Unione familiare</span></div>
+          </section>
+          <section id="panelRelations" class="tab-panel" role="tabpanel" aria-labelledby="tabRelations" hidden>
+            <div class="panel-heading"><div><h3>Documenti e relazioni</h3><p>Le informazioni effettivamente presenti nell'esportazione di MacFamilyTree 11.</p></div></div>
+            <div id="lifeFacts" class="life-facts"></div>
+            <div id="familyRelations" class="family-sections"></div>
+          </section>
+          <section id="panelPath" class="tab-panel" role="tabpanel" aria-labelledby="tabPath" hidden>
+            <div class="panel-heading"><div><h3>Trova un collegamento</h3><p>Parti da questa persona, cerca un'altra persona e verifica se esiste un percorso documentato nella rete pubblica.</p></div></div>
+            <label class="field-label" for="pathSearch">SECONDA PERSONA</label>
+            <div class="search-field path-field"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5" stroke-linecap="round"/></svg><input id="pathSearch" type="search" autocomplete="off" placeholder="Cerca nome o cognome..."></div>
+            <div id="pathSuggestions" class="path-suggestions"></div>
+            <div id="pathResult" class="path-result" aria-live="polite"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+    <div class="shell bottom-note"><p><strong>Nota sulle fonti.</strong> L'esportazione usata in questa versione contiene identità, date e legami genealogici, ma non include riferimenti puntuali agli atti storici in ogni scheda. Le relazioni mostrate devono essere interpretate come dati ricostruiti, non come verifica documentale indipendente.</p><p>Il filtro di riservatezza è automatico e prudenziale; non sostituisce una verifica prima della pubblicazione. <a id="originalBottom" href="rete.html?comune=cariati">Consulta il visualizzatore originale ↗</a></p></div>
+  </div>
+  <footer class="footer"><div class="shell footer-inner"><a href="index.html" class="footer-brand">radici.calabria</a><span>Archivio genealogico digitale · Calabria</span><a href="index.html#comuni">Torna ai comuni ↗</a></div></footer>
+</body>
+</html>
