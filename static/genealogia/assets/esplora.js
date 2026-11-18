@@ -72,7 +72,7 @@
     $('statFamilies').textContent=number(d.totaliPubblici.famiglie);
     $('statEvents').textContent=number(d.totaliPubblici.eventi ?? d.totaliOriginali.eventi);
     $('privacySummary').textContent=d.archivioCompleto?
-      'Questa versione include tutti i profili, tutte le famiglie e tutti gli eventi presenti nell’esportazione originale MacFamilyTree 11, anche quando le date non sono note.':
+      'Questa versione include tutti i profili, tutte le famiglie e tutti gli eventi presenti nel GEDCOM aggiornato, anche quando le date non sono note.':
       `Profili con morte registrata o nascita entro il ${d.cutoffNascita}. Alcuni profili e collegamenti non sono pubblicati in questa vista.`;
     const legacy=`rete.html?comune=${encodeURIComponent(slug)}`;
     $('legacyLink').href=legacy; $('originalBottom').href=legacy;

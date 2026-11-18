@@ -6,7 +6,7 @@ window.RADICI_COMUNI = [
   {
     slug: 'cariati', nome: 'Cariati', provincia: 'Cosenza', sigla: 'CS',
     descrizione: 'La memoria genealogica di Cariati: persone, famiglie e relazioni tra generazioni.',
-    periodo: '1720–1910', persone: 30566, famiglie: 9783, eventi: 29517, url: '', ready: true, cover: 'verde'
+    periodo: '1720–2025', persone: 28888, famiglie: 9394, eventi: 29184, url: '', ready: true, cover: 'verde'
   },
   {
     slug: 'pedace', nome: 'Pedace', provincia: 'Cosenza', sigla: 'CS',
