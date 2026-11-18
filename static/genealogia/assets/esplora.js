@@ -7,7 +7,7 @@
   const params = new URLSearchParams(location.search);
   const slug = params.get('comune') || 'cariati';
   if (!/^[a-z0-9-]+$/.test(slug)) return fail('Codice del comune non valido.');
-  const state = {data:null, persons:[], byId:new Map(), families:[], selected:null, activeTab:'tree', found:[], shown:30, target:null, graph:new Map(), loaded:false};
+  const state = {data:null, persons:[], byId:new Map(), families:[], events:new Map(), selected:null, activeTab:'tree', found:[], shown:30, target:null, graph:new Map(), loaded:false};
   const add = (map,key,value) => {if (!map.has(key)) map.set(key,[]); map.get(key).push(value);};
   const sortedUnique = (arr) => [...new Set(arr)].filter(id => state.byId.has(id)).sort((a,b) => state.byId.get(a).name.localeCompare(state.byId.get(b).name,'it'));
   const briefDate = (p) => (p.birthYear || '—') + ' — ' + (p.deathYear || '—');
@@ -27,11 +27,13 @@
       state.persons = d.persone.map(row => ({
         id:String(row[0]), given:String(row[1]||''), surname:String(row[2]||''), gender:row[3],
         birth:String(row[4]||''), death:String(row[5]||''), birthYear:row[6], deathYear:row[7],
-        name:(String(row[1]||'')+' '+String(row[2]||'')).trim() || 'Senza nome',
+        events:Array.isArray(row[8])?row[8]:[], suffix:String(row[9]||''),
+        name:([row[1],row[2],row[9]].filter(Boolean).join(' ')).trim() || 'Senza nome',
         parents:new Set(), children:new Set(), spouses:new Set(), siblings:new Set(), parentFamilies:[], childFamilies:[]
       }));
       state.persons.forEach(p => { p.match=normalize(`${p.name} ${p.surname} ${p.given} ${p.id}`); state.byId.set(p.id,p); });
-      state.families = d.famiglie.map(row => ({id:row[0],father:row[1],mother:row[2],children:row[3]||[],marriage:row[4]||''}));
+      state.families = d.famiglie.map(row => ({id:row[0],father:row[1],mother:row[2],children:row[3]||[],marriage:row[4]||'',events:row[5]||[]}));
+      state.events = new Map((d.eventi||[]).map(row=>[row[0],{id:row[0],kind:row[1],date:row[2]||'',age:row[3]||'',timestamp:row[4],sourceId:row[5]}]));
       for (const f of state.families) {
         const parents=[f.father,f.mother].filter(x=>state.byId.has(x));
         parents.forEach(id => state.byId.get(id).parentFamilies.push(f));
@@ -68,8 +70,10 @@
     $('townTitle').replaceChildren(document.createTextNode(d.comune),Object.assign(document.createElement('span'),{className:'title-mark',textContent:'.'}));
     $('statPeople').textContent=number(d.totaliPubblici.persone);
     $('statFamilies').textContent=number(d.totaliPubblici.famiglie);
-    $('statOriginal').textContent=number(d.totaliOriginali.persone);
-    $('privacySummary').textContent=`Profili con morte registrata o nascita entro il ${d.cutoffNascita}. I profili senza una prova storica sufficiente non vengono pubblicati in questa vista. L'assenza di una persona non significa necessariamente che non esista nell'archivio.`;
+    $('statEvents').textContent=number(d.totaliPubblici.eventi ?? d.totaliOriginali.eventi);
+    $('privacySummary').textContent=d.archivioCompleto?
+      'Questa versione include tutti i profili, tutte le famiglie e tutti gli eventi presenti nell’esportazione originale MacFamilyTree 11, anche quando le date non sono note.':
+      `Profili con morte registrata o nascita entro il ${d.cutoffNascita}. Alcuni profili e collegamenti non sono pubblicati in questa vista.`;
     const legacy=`rete.html?comune=${encodeURIComponent(slug)}`;
     $('legacyLink').href=legacy; $('originalBottom').href=legacy;
     const surnames=new Map();
@@ -99,7 +103,7 @@
   }
   function passesPeriod(p,period) {
     const y=p.birthYear;
-    switch(period){case'before1800':return y!==null&&y<1800;case'1800':return y>=1800&&y<=1849;case'1850':return y>=1850&&y<=1899;case'1900':return y>=1900&&y<=1906;case'unknown':return y===null;default:return true;}
+    switch(period){case'before1800':return y!==null&&y<1800;case'1800':return y>=1800&&y<=1849;case'1850':return y>=1850&&y<=1899;case'1900':return y>=1900&&y<=1949;case'1950':return y>=1950&&y<=1999;case'2000':return y>=2000;case'unknown':return y===null;default:return true;}
   }
   function matchesTerms(p,q){
     if(!q)return true;
@@ -151,7 +155,7 @@
     if(!state.selected)return;
     if(tab==='tree')renderTree();
     else if(tab==='relations')renderRelations();
-    else if(tab==='path')$('pathResult').innerHTML='<p class="path-prompt">Cerca una seconda persona: verrà ricostruito il percorso minimo attraverso genitori, figli e unioni familiari presenti nei dati pubblici.</p>';
+    else if(tab==='path')$('pathResult').innerHTML='<p class="path-prompt">Cerca una seconda persona: verrà ricostruito il percorso minimo attraverso genitori, figli e unioni familiari presenti nell’archivio.</p>';
   }
   function renderTree() {
     const focus=state.byId.get(state.selected);if(!focus)return;
@@ -215,19 +219,25 @@
     const p=state.byId.get(id);if(!p)return '';
     return `<button class="family-person" type="button" data-person="${safe(p.id)}"><span><strong>${safe(p.name)}</strong><small>${safe(briefDate(p))}</small></span><span aria-hidden="true">→</span></button>`;
   }
-  function relationBlock(title,ids){const people=sortedUnique(ids);return `<div class="family-section"><h4>${safe(title)} <small>${people.length}</small></h4>${people.length?`<div class="family-grid">${people.map(personCard).join('')}</div>`:'<div class="family-empty">Nessuna relazione pubblica disponibile nell’archivio.</div>'}</div>`;}
+  function relationBlock(title,ids){const people=sortedUnique(ids);return `<div class="family-section"><h4>${safe(title)} <small>${people.length}</small></h4>${people.length?`<div class="family-grid">${people.map(personCard).join('')}</div>`:'<div class="family-empty">Nessuna relazione disponibile nell’archivio.</div>'}</div>`;}
   function renderRelations(){
     const p=state.byId.get(state.selected);
     $('lifeFacts').innerHTML=`<div class="life-fact"><span>NASCITA</span><strong>${safe(labelDate(p.birth))}</strong></div><div class="life-fact"><span>MORTE</span><strong>${safe(labelDate(p.death))}</strong></div><div class="life-fact"><span>IDENTIFICATIVO GEDCOM</span><strong>${safe(p.id)}</strong></div>`;
     const groups=[];
+    const events=p.events.map(id=>state.events.get(id)).filter(Boolean).sort((a,b)=>(a.timestamp??0)-(b.timestamp??0));
+    if(events.length){
+      const names={'_PersonEvent_Birth':'Nascita','_PersonEvent_Death':'Morte','_FamilyEvent_Marriage':'Matrimonio'};
+      const lines=events.map(ev=>`<div class="life-fact"><span>${safe(names[ev.kind]||ev.kind||'Evento')}</span><strong>${safe(ev.date||'Data non registrata')}</strong>${ev.age?`<small>Età registrata: ${safe(ev.age)}</small>`:''}</div>`).join('');
+      groups.push(`<div class="family-section"><h4>Eventi documentati <small>${events.length}</small></h4><div class="life-facts">${lines}</div></div>`);
+    }
     groups.push(relationBlock('Genitori',[...p.parents]));
     groups.push(relationBlock('Fratelli e sorelle',[...p.siblings]));
     if(p.parentFamilies.length){
       let unions=`<div class="family-section"><h4>Unioni e discendenza <small>${p.parentFamilies.length} ${p.parentFamilies.length===1?'nucleo':'nuclei'}</small></h4>`;
       for(const f of p.parentFamilies){
         const spouses=[f.father,f.mother].filter(x=>x&&x!==p.id&&state.byId.has(x));
-        const other=spouses.map(id=>state.byId.get(id).name).join(', ') || 'Coniuge non pubblicato';
-        unions+=`<div class="family-group"><div class="family-group-title">${safe(other)} ${f.marriage?`<em>Matrimonio: ${safe(f.marriage)}</em>`:''}</div><div class="family-grid">${(spouses.length?spouses.map(personCard):[]).concat(f.children.map(personCard)).join('')||'<p class="family-empty">Nessun profilo aggiuntivo consultabile</p>'}</div></div>`;
+        const other=spouses.map(id=>state.byId.get(id).name).join(', ') || 'Coniuge non indicato';
+        unions+=`<div class="family-group"><div class="family-group-title">${safe(other)} ${f.marriage?`<em>Matrimonio: ${safe(f.marriage)}</em>`:''}</div><div class="family-grid">${(spouses.length?spouses.map(personCard):[]).concat(f.children.map(personCard)).join('')||'<p class="family-empty">Nessun altro profilo collegato</p>'}</div></div>`;
       }
       groups.push(unions+'</div>');
     } else {groups.push(relationBlock('Coniugi',[...p.spouses]));groups.push(relationBlock('Figli',[...p.children]));}
@@ -268,7 +278,7 @@
     $('pathSuggestions').replaceChildren();
     const path=shortestPath(state.selected,target);
     const out=$('pathResult');
-    if(!path){out.innerHTML=`<p class="path-prompt">Non è stato trovato un percorso entro 12 passaggi tra <strong>${safe(state.byId.get(state.selected).name)}</strong> e <strong>${safe(p.name)}</strong> nella rete pubblica. Questo non dimostra l'assenza di parentela: alcuni profili e collegamenti non sono disponibili in questa versione.</p>`;return;}
+    if(!path){out.innerHTML=`<p class="path-prompt">Non è stato trovato un percorso entro 12 passaggi tra <strong>${safe(state.byId.get(state.selected).name)}</strong> e <strong>${safe(p.name)}</strong> nella rete genealogica. Questo non dimostra l’assenza di parentela: i dati di origine possono essere incompleti.</p>`;return;}
     const summary=path.length===1?'La persona coincide con quella selezionata.':`Percorso individuato: ${path.length-1} ${path.length===2?'passaggio':'passaggi'} attraverso le relazioni registrate.`;
     out.innerHTML=`<p class="path-summary">${safe(summary)}</p><div class="path-list">${path.map((step,i)=>`${i?`<div class="path-link">↓ ${safe(step.rel)}</div>`:''}<button type="button" class="path-item" data-person="${safe(step.id)}"><strong>${safe(state.byId.get(step.id).name)}</strong><span>${safe(briefDate(state.byId.get(step.id)))}</span></button>`).join('')}</div>`;
   }
