@@ -21,10 +21,36 @@
   }
   function card(town, idx) {
     const a = document.createElement('a');
-    a.className = `town-card tone-${town.cover || 'terra'}`;
+    a.className = `town-card town-card-archivio tone-${town.cover || 'terra'}`;
     a.href = `rete.html?comune=${encodeURIComponent(town.slug)}`;
     a.setAttribute('aria-label', `${town.nome}, ${town.ready ? 'esplora rete' : 'rete in preparazione'}`);
-    a.innerHTML = `<div class="town-cover"><div class="town-decor" aria-hidden="true"><span class="arch arch1"></span><span class="arch arch2"></span><span class="arch arch3"></span></div><div class="town-cover-top"><span>CALABRIA · ${safe(town.sigla)}</span><span class="town-number">${String(idx + 1).padStart(2,'0')}</span></div><div class="town-cover-letter" aria-hidden="true">${safe(town.nome.charAt(0))}</div><div class="town-cover-bottom">${safe(town.provincia.toUpperCase())} <span>✳</span></div></div><div class="town-info"><div class="town-info-top"><span class="town-province">PROVINCIA DI ${safe(town.provincia.toUpperCase())}</span><span class="town-badge ${town.ready ? 'is-ready' : ''}">${town.ready ? 'Consultabile' : 'In preparazione'}</span></div><h3>${safe(town.nome)}</h3><p>${safe(town.descrizione)}</p>${town.persone ? `<div class="town-meta"><span>✳ ${Number(town.persone).toLocaleString('it-IT')} persone</span><span>⌁ ${Number(town.famiglie).toLocaleString('it-IT')} famiglie</span></div>` : ''}<div class="town-bottom"><span>${town.ready ? 'Esplora la genealogia' : 'Scopri la rete'}</span><span class="circle-arrow" aria-hidden="true">↗</span></div></div>`;
+
+    // Dati dell'archivio, mostrati solo quando disponibili nel catalogo.
+    const facts = [
+      ['Persone', town.persone != null ? Number(town.persone).toLocaleString('it-IT') : null],
+      ['Famiglie', town.famiglie != null ? Number(town.famiglie).toLocaleString('it-IT') : null],
+      ['Eventi', town.eventi != null ? Number(town.eventi).toLocaleString('it-IT') : null],
+      ['Periodo', town.periodo || null]
+    ].filter(([, value]) => value != null && value !== '');
+    const details = facts.length
+      ? `<dl class="town-facts">${facts.map(([key, value]) => `<div><dt>${safe(key)}</dt><dd>${safe(value)}</dd></div>`).join('')}</dl>`
+      : `<div class="town-pending-note">Dati e relazioni familiari saranno consultabili dopo la pubblicazione dell'archivio.</div>`;
+
+    a.innerHTML = `
+      <div class="town-cover">
+        <div class="town-cover-top"><span>ARCHIVIO GENEALOGICO</span><span class="town-number">SCHEDA ${String(idx + 1).padStart(2, '0')}</span></div>
+        <div class="town-cover-identity">
+          <span class="town-document" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3.5h11l5 5V28.5H8z"/><path d="M19 3.5v5h5M12 14h8M12 18h8M12 22h5"/></svg></span>
+          <div><strong>CALABRIA · ${safe(town.sigla)}</strong><span>Provincia di ${safe(town.provincia)}</span></div>
+        </div>
+      </div>
+      <div class="town-info">
+        <div class="town-info-top"><span class="town-province">COLLEZIONE COMUNALE</span><span class="town-badge ${town.ready ? 'is-ready' : ''}">${town.ready ? 'Consultabile' : 'In preparazione'}</span></div>
+        <h3>${safe(town.nome)}</h3>
+        <p class="town-description">${safe(town.descrizione)}</p>
+        ${details}
+        <div class="town-bottom"><span>${town.ready ? 'Esplora la genealogia' : 'Scopri la rete'}</span><span class="town-link-arrow" aria-hidden="true">→</span></div>
+      </div>`;
     return a;
   }
   function render() {
