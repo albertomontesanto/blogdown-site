@@ -1,0 +1,32 @@
+/* Radici di Calabria — unobtrusive IT / EN switch, compatible with Blogdown. */
+.rc-lang-switch{
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:2px;flex:0 0 auto;margin-left:auto;
+  padding:3px;background:#eef2ed;border:1px solid #d5ded4;
+  border-radius:7px;white-space:nowrap;align-self:center;
+}
+.rc-lang-switch button{
+  appearance:none;-webkit-appearance:none;border:0;background:transparent;
+  color:#53695b;border-radius:5px;cursor:pointer;
+  padding:7px 9px;font-family:inherit;font-size:12px;font-weight:700;
+  line-height:1.15;letter-spacing:.05em;min-width:38px;
+  transition:background-color .16s ease,color .16s ease;
+}
+.rc-lang-switch button.is-selected,
+.rc-lang-switch button[aria-pressed="true"]{background:#254e40;color:#fff}
+.rc-lang-switch button:hover:not(.is-selected){background:#dde7dc;color:#254e40}
+.rc-lang-switch button:focus-visible{outline:2px solid #9a7b4b;outline-offset:3px}
+.topbar-inner .rc-lang-switch{margin-left:auto}
+/* Keep the switch visible, even if the main navigation collapses. */
+@media(max-width:850px){
+  .header-inner .rc-lang-switch{margin-left:auto}
+  .topbar-inner .rc-lang-switch{margin-left:auto}
+  .rc-lang-switch button{padding:6px 8px;min-width:34px;font-size:11px}
+}
+@media(max-width:430px){
+  .header-inner,.topbar-inner{column-gap:8px}
+  .rc-lang-switch{padding:2px;gap:0}
+  .rc-lang-switch button{padding:6px;min-width:31px;font-size:10px}
+  .header-inner .brand{min-width:0}
+}
+@media(prefers-reduced-motion:reduce){.rc-lang-switch button{transition:none}}
