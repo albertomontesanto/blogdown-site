@@ -284,40 +284,244 @@
     const summary=path.length===1?'La persona coincide con quella selezionata.':`Percorso individuato: ${path.length-1} ${path.length===2?'passaggio':'passaggi'} attraverso le relazioni registrate.`;
     out.innerHTML=`<p class="path-summary">${safe(summary)}</p><div class="path-list">${path.map((step,i)=>`${i?`<div class="path-link">↓ ${safe(step.rel)}</div>`:''}<button type="button" class="path-item" data-person="${safe(step.id)}"><strong>${safe(state.byId.get(step.id).name)}</strong><span>${safe(briefDate(state.byId.get(step.id)))}</span></button>`).join('')}</div>`;
   }
-  // Grafo genealogico: costruito dai collegamenti indicizzati dall'archivio completo.
-  // La visualizzazione è intenzionalmente locale alla persona selezionata:
-  // anche con oltre 30.000 profili il browser non deve disegnare l'intero database.
-  const GRAPH_NS = 'http://www.w3.org/2000/svg';
-  const GRAPH_W = 1100, GRAPH_H = 640;
-  const graph = {nodes:[], edges:[], positions:new Map(), x:0, y:0, k:1, dragging:null, moved:false, suppress:false, capped:false};
-  const makeSvg = (tag,attributes={}) => {
+  // Grafo progressivo: la ricerca determina la radice; ogni clic espande o
+  // richiude ESCLUSIVAMENTE i legami diretti registrati per quel nodo.
+  // Il sesso deriva dal dataset: 0=maschio, 1=femmina.
+  const GRAPH_NS='http://www.w3.org/2000/svg';
+  const GRAPH_W=1100, GRAPH_H=640;
+  const MAX_GRAPH_NODES=700;
+  const graph={root:null, nodes:[], edges:[], expanded:new Set(), visible:new Set(),
+    positions:new Map(), x:0, y:0, k:1, dragging:null, moved:false,
+    suppress:false, activeNode:null, warning:''};
+  const makeSvg=(tag,attributes={})=>{
     const el=document.createElementNS(GRAPH_NS,tag);
     for(const [k,v] of Object.entries(attributes))el.setAttribute(k,String(v));
     return el;
   };
-  const graphSort = ids=>sortedUnique(ids);
+  function directRelations(id){
+    const p=state.byId.get(id); if(!p)return [];
+    return [
+      ...sortedUnique([...p.parents]).map(to=>({to,kind:'parent',from:to,target:id})),
+      ...sortedUnique([...p.spouses]).map(to=>({to,kind:'union',from:id,target:to})),
+      ...sortedUnique([...p.children]).map(to=>({to,kind:'child',from:id,target:to})),
+      ...sortedUnique([...p.siblings]).map(to=>({to,kind:'sibling',from:id,target:to}))
+    ];
+  }
+  function graphEdgeKey(edge){
+    return edge.kind==='parent'||edge.kind==='child'
+      ? `p:${edge.from}|${edge.target}`
+      : `${edge.kind==='union'?'u':'s'}:${[edge.from,edge.target].sort().join('|')}`;
+  }
+  function graphBuild(){
+    const shown=new Set([graph.root]),queue=[graph.root],origin=new Map(),edges=new Map();
+    for(let i=0;i<queue.length;i++){
+      const id=queue[i];
+      if(!graph.expanded.has(id))continue;
+      for(const r of directRelations(id)){
+        if(!shown.has(r.to)){
+          shown.add(r.to);queue.push(r.to);origin.set(r.to,{anchor:id,kind:r.kind});
+        }
+        const e={from:r.from,to:r.target,kind:r.kind==='child'?'parent':r.kind};
+        edges.set(graphEdgeKey({from:e.from,target:e.to,kind:e.kind}),e);
+      }
+    }
+    return {shown,origin,edges:[...edges.values()]};
+  }
+  function graphFindSpace(wanted){
+    const taken=(x,y)=>[...graph.positions.values()].some(p=>Math.abs(x-p.x)<164&&Math.abs(y-p.y)<126);
+    if(!taken(wanted.x,wanted.y))return wanted;
+    for(let ring=1;ring<=25;ring++){
+      const count=12*ring;
+      for(let i=0;i<count;i++){
+        const angle=2*Math.PI*i/count;
+        const x=wanted.x+Math.cos(angle)*95*ring;
+        const y=wanted.y+Math.sin(angle)*82*ring;
+        if(!taken(x,y))return {x,y};
+      }
+    }
+    return {x:wanted.x+3000,y:wanted.y};
+  }
+  function graphLayoutNew(origin,shown){
+    // Le posizioni già visualizzate restano ferme durante le espansioni.
+    for(const id of [...graph.positions.keys()])if(!shown.has(id))graph.positions.delete(id);
+    if(!graph.positions.has(graph.root))graph.positions.set(graph.root,{x:0,y:0});
+    const groups=new Map();
+    for(const id of shown){
+      if(graph.positions.has(id))continue;
+      const source=origin.get(id);
+      if(!source)continue;
+      const key=source.anchor+':'+source.kind;
+      if(!groups.has(key))groups.set(key,{...source,ids:[]});
+      groups.get(key).ids.push(id);
+    }
+    // Dispone ogni gruppo nella direzione naturale della parentela.
+    // Se un gruppo entra in collisione con uno precedente, cerca spazio libero.
+    let remaining=[...groups.values()];
+    for(let pass=0;pass<groups.size+1&&remaining.length;pass++){
+      const next=[];
+      for(const group of remaining){
+        const anchor=graph.positions.get(group.anchor);
+        if(!anchor){next.push(group);continue;}
+        const ids=group.ids, maxPerRow=group.kind==='parent'?4:6;
+        for(let i=0;i<ids.length;i++){
+          const ring=Math.floor(i/maxPerRow),col=i%maxPerRow;
+          const count=Math.min(maxPerRow,ids.length-ring*maxPerRow);
+          const delta=(col-(count-1)/2)*180;
+          let x=anchor.x,y=anchor.y;
+          if(group.kind==='parent') {x+=delta;y-=180+ring*165;}
+          else if(group.kind==='child'){x+=delta;y+=180+ring*165;}
+          else if(group.kind==='union'){x+=250+ring*190;y+=delta*.9;}
+          else {x-=250+ring*190;y+=delta*.9;}
+          graph.positions.set(ids[i],graphFindSpace({x,y}));
+        }
+      }
+      remaining=next;
+    }
+  }
+  function graphRebuild({autoFit=false}={}){
+    const result=graphBuild();
+    graphLayoutNew(result.origin,result.shown);
+    graph.visible=result.shown;graph.edges=result.edges;
+    graph.nodes=[...result.shown].map(id=>({id,person:state.byId.get(id)}));
+    // Dopo la chiusura di un ramo non devono restare espansioni invisibili.
+    for(const id of [...graph.expanded])if(!result.shown.has(id))graph.expanded.delete(id);
+    if(!result.shown.has(graph.activeNode))graph.activeNode=graph.root;
+    paintGraph();
+    if(autoFit){
+      if(graph.nodes.length<=16)fitGraph();
+      else {
+        // Una rete ampia non viene ridotta a puntini illeggibili: restano
+        // disponibili zoom e trascinamento per vedere tutti i rami.
+        const anchor=graph.positions.get(graph.activeNode)||graph.positions.get(graph.root);
+        graph.k=.78;
+        graph.x=GRAPH_W/2-anchor.x*graph.k;
+        graph.y=GRAPH_H/2-anchor.y*graph.k;
+        applyGraphTransform();
+      }
+    }
+    updateGraphStatus();
+  }
+  function renderGraph(){
+    if(!state.selected)return;
+    if(graph.root!==state.selected){
+      graph.root=state.selected;
+      graph.expanded.clear();graph.visible=new Set([state.selected]);
+      graph.positions=new Map([[state.selected,{x:0,y:0}]]);
+      graph.nodes=[];graph.edges=[];graph.activeNode=state.selected;graph.warning='';
+      graph.x=0;graph.y=0;graph.k=1;
+      graphRebuild();centerGraph();
+    }else{paintGraph();updateGraphStatus();}
+  }
+  function resetGraph(){
+    if(!state.selected)return;
+    graph.root=null;renderGraph();
+  }
+  function toggleGraphNode(id){
+    if(!graph.visible.has(id))return;
+    graph.warning='';graph.activeNode=id;
+    if(graph.expanded.has(id)){
+      graph.expanded.delete(id);
+      graphRebuild({autoFit:true});
+      return;
+    }
+    graph.expanded.add(id);
+    const candidate=graphBuild();
+    if(candidate.shown.size>MAX_GRAPH_NODES){
+      graph.expanded.delete(id);
+      graph.warning=`Questo clic porterebbe a ${number(candidate.shown.size)} persone. Per conservare la fluidità del browser il limite della vista è ${number(MAX_GRAPH_NODES)} nodi. Torna al profilo di partenza oppure richiudi alcuni rami.`;
+      updateGraphStatus();return;
+    }
+    graphRebuild({autoFit:true});
+  }
+  function updateGraphStatus(){
+    if(!graph.root)return;
+    const total=graph.nodes.length;
+    $('graphSummary').textContent=`${number(total)} ${total===1?'persona':'persone'} · ${number(graph.edges.length)} collegamenti · ${number(graph.expanded.size)} ${graph.expanded.size===1?'nodo espanso':'nodi espansi'}`;
+    const p=state.byId.get(graph.activeNode)||state.byId.get(graph.root);
+    if(p){
+      const n=directRelations(p.id).length, open=graph.expanded.has(p.id);
+      $('graphNodeDetails').textContent=`${p.name} (${briefDate(p)}) · ${number(n)} relazioni dirette · ${open?'Clicca di nuovo sul nodo per richiuderlo':'Clicca sul nodo per espanderlo'}`;
+      $('graphOpenProfile').disabled=p.id===state.selected;
+      $('graphOpenProfile').textContent=p.id===state.selected?'Profilo di partenza':'Apri scheda persona ↗';
+    }
+    $('graphLimitNote').hidden=!graph.warning;
+    if(graph.warning)$('graphLimitNote').textContent=graph.warning;
+  }
+  function graphWordLines(name){
+    const words=String(name||'Senza nome').split(/\s+/).filter(Boolean);
+    const lines=[''];
+    for(const w of words){
+      const last=lines.length-1;
+      if((lines[last]+' '+w).trim().length>22&&lines[last]&&lines.length<2)lines.push(w);
+      else lines[last]=(lines[last]+' '+w).trim();
+    }
+    return lines.map(l=>l.length>25?l.slice(0,24)+'…':l);
+  }
+  function paintGraph(){
+    const scene=$('graphScene');scene.replaceChildren();
+    const edges=makeSvg('g',{'class':'graph-edges'});
+    for(const edge of graph.edges){
+      const a=graph.positions.get(edge.from),b=graph.positions.get(edge.to);
+      if(!a||!b)continue;
+      const line=makeSvg('path',{'class':`graph-edge graph-edge-${edge.kind}`,
+        d:`M ${a.x} ${a.y} L ${b.x} ${b.y}`});
+      const t=makeSvg('title');t.textContent=edge.kind==='parent'?'Relazione genitore–figlio':edge.kind==='union'?'Unione familiare':'Fratelli o sorelle';
+      line.append(t);edges.appendChild(line);
+    }
+    scene.appendChild(edges);
+    const nodes=makeSvg('g',{'class':'graph-nodes'});
+    for(const item of graph.nodes){
+      const p=item.person, point=graph.positions.get(p.id);
+      if(!point)continue;
+      const opened=graph.expanded.has(p.id), root=p.id===graph.root;
+      const sex=p.gender===0?'male':p.gender===1?'female':'unknown';
+      const g=makeSvg('g',{'class':`graph-node graph-${sex}${root?' is-focus':''}${opened?' is-open':''}${p.id===graph.activeNode?' is-active':''}`,
+        transform:`translate(${point.x},${point.y})`,'data-graph-person':p.id,
+        'role':'button','tabindex':'0',
+        'aria-label':`${p.name}, ${sex==='male'?'maschio':sex==='female'?'femmina':'sesso non indicato'}, ${briefDate(p)}. ${opened?'Richiudi':'Espandi'} relazioni dirette`});
+      const title=makeSvg('title');title.textContent=`${p.name} (${briefDate(p)}) — ${opened?'Richiudi':'Espandi'} relazioni`;
+      let figure;
+      if(sex==='male')figure=makeSvg('rect',{x:-34,y:-34,width:68,height:68,rx:3,'class':'graph-sex-shape'});
+      else if(sex==='female')figure=makeSvg('circle',{cx:0,cy:0,r:34,'class':'graph-sex-shape'});
+      else figure=makeSvg('path',{d:'M0 -38 L38 0 L0 38 L-38 0Z','class':'graph-sex-shape'});
+      const initials=(p.given||p.surname||'?').trim().charAt(0).toLocaleUpperCase('it-IT')||'?';
+      const letter=makeSvg('text',{x:0,y:7,'class':'graph-monogram','text-anchor':'middle'});letter.textContent=initials;
+      const mark=makeSvg('text',{x:43,y:-28,'class':'graph-expand-mark','text-anchor':'middle'});mark.textContent=opened?'−':'+';
+      g.append(title,figure,letter,mark);
+      const lines=graphWordLines(p.name);
+      for(let i=0;i<lines.length;i++){
+        const label=makeSvg('text',{x:0,y:58+i*16,'class':'graph-node-name','text-anchor':'middle'});
+        label.textContent=lines[i];g.appendChild(label);
+      }
+      const years=makeSvg('text',{x:0,y:58+lines.length*16,'class':'graph-node-years','text-anchor':'middle'});
+      years.textContent=briefDate(p);g.appendChild(years);
+      nodes.appendChild(g);
+    }
+    scene.appendChild(nodes);
+    applyGraphTransform();
+  }
   function setupGraphControls(){
-    ['graphGenerations','graphScope','graphLimit','graphSpouses'].forEach(id=>$(id).addEventListener('change',()=>{
-      if(state.selected&&state.activeTab==='graph')renderGraph();
-    }));
+    $('graphReset').addEventListener('click',resetGraph);
     $('graphZoomIn').addEventListener('click',()=>zoomGraph(1.28));
     $('graphZoomOut').addEventListener('click',()=>zoomGraph(1/1.28));
-    $('graphFit').addEventListener('click',()=>fitGraph());
-    $('graphCenter').addEventListener('click',()=>centerGraph());
+    $('graphFit').addEventListener('click',fitGraph);
+    $('graphCenter').addEventListener('click',centerGraph);
     $('graphSave').addEventListener('click',exportGraph);
+    $('graphOpenProfile').addEventListener('click',()=>{
+      if(graph.activeNode&&graph.activeNode!==state.selected)select(graph.activeNode,true,'tree');
+    });
     const svg=$('graphSvg');
     svg.addEventListener('wheel',e=>{
       if(state.activeTab!=='graph')return;
       e.preventDefault();
-      const bounds=svg.getBoundingClientRect();
-      const sx=(e.clientX-bounds.left)*GRAPH_W/bounds.width;
-      const sy=(e.clientY-bounds.top)*GRAPH_H/bounds.height;
+      const b=svg.getBoundingClientRect();
+      const sx=(e.clientX-b.left)*GRAPH_W/b.width,sy=(e.clientY-b.top)*GRAPH_H/b.height;
       zoomGraph(e.deltaY<0?1.1:1/1.1,sx,sy);
     },{passive:false});
     svg.addEventListener('pointerdown',e=>{
       if(e.button!==0)return;
-      const node=e.target.closest('[data-graph-person]');
-      graph.dragging={pointer:e.pointerId,id:node?node.getAttribute('data-graph-person'):null,
+      const el=e.target.closest('[data-graph-person]');
+      graph.dragging={pointer:e.pointerId,id:el?el.getAttribute('data-graph-person'):null,
         startX:e.clientX,startY:e.clientY,lastX:e.clientX,lastY:e.clientY};
       graph.moved=false;
       svg.setPointerCapture(e.pointerId);
@@ -334,194 +538,75 @@
       if(drag.id){
         const pos=graph.positions.get(drag.id);
         if(pos){pos.x+=dx/graph.k;pos.y+=dy/graph.k;paintGraph();}
-      } else {graph.x+=dx;graph.y+=dy;applyGraphTransform();}
+      }else{graph.x+=dx;graph.y+=dy;applyGraphTransform();}
     });
     const finish=e=>{
       if(!graph.dragging||graph.dragging.pointer!==e.pointerId)return;
       const clicked=!graph.moved?graph.dragging.id:null;
       graph.dragging=null;$('graphViewport').classList.remove('is-panning');
       if(svg.hasPointerCapture(e.pointerId))svg.releasePointerCapture(e.pointerId);
-      // Con la pointer capture il click può essere indirizzato all'SVG:
-      // apriamo direttamente la scheda dalla pointerup per non perdere il nodo.
       if(graph.moved||clicked){graph.suppress=true;setTimeout(()=>{graph.suppress=false;},0);}
-      if(clicked)select(clicked,true,'graph');
+      if(clicked)toggleGraphNode(clicked);
     };
     svg.addEventListener('pointerup',finish);
-    svg.addEventListener('pointercancel',finish);
+    svg.addEventListener('pointercancel',e=>{
+      if(graph.dragging?.pointer===e.pointerId){graph.dragging=null;$('graphViewport').classList.remove('is-panning');}
+    });
     svg.addEventListener('click',e=>{
       if(graph.suppress||graph.moved)return;
-      const node=e.target.closest('[data-graph-person]');
-      if(node)select(node.getAttribute('data-graph-person'),true,'graph');
+      const el=e.target.closest('[data-graph-person]');
+      if(el)toggleGraphNode(el.getAttribute('data-graph-person'));
     });
     svg.addEventListener('keydown',e=>{
       if(e.key!=='Enter'&&e.key!==' ')return;
-      const node=e.target.closest('[data-graph-person]');
-      if(!node)return;
-      e.preventDefault();select(node.getAttribute('data-graph-person'),true,'graph');
+      const el=e.target.closest('[data-graph-person]');
+      if(!el)return;
+      e.preventDefault();toggleGraphNode(el.getAttribute('data-graph-person'));
     });
-  }
-  function constructGraph(){
-    const start=state.selected;
-    const generations=Number($('graphGenerations').value)||2;
-    const scope=$('graphScope').value;
-    const max=Math.min(200,Number($('graphLimit').value)||120);
-    const includeSpouses=$('graphSpouses').checked;
-    const found=new Map([[start,0]]),queue=[start];
-    let capped=false;
-    for(let i=0;i<queue.length;i++){
-      const id=queue[i],depth=found.get(id),person=state.byId.get(id);
-      if(!person)continue;
-      let next=[];
-      if(scope!=='descendants'&&depth>-generations)
-        next.push(...graphSort([...person.parents]).map(x=>({id:x,depth:depth-1})));
-      if(scope!=='ancestors'&&depth<generations)
-        next.push(...graphSort([...person.children]).map(x=>({id:x,depth:depth+1})));
-      for(const relation of next){
-        if(found.has(relation.id))continue;
-        if(found.size>=max){capped=true;continue;}
-        found.set(relation.id,relation.depth);queue.push(relation.id);
-      }
-    }
-    // I coniugi si aggiungono alla generazione del rispettivo partner senza
-    // far ripartire l'espansione da loro: questo contiene l'esplosione del grafo.
-    if(includeSpouses){
-      const base=[...found.keys()];
-      for(const id of base){
-        const person=state.byId.get(id);
-        for(const spouse of graphSort([...person.spouses])){
-          if(found.has(spouse))continue;
-          if(found.size>=max){capped=true;continue;}
-          found.set(spouse,found.get(id));
-        }
-      }
-    }
-    const ids=[...found.keys()];
-    const edges=[],links=new Set();
-    const addEdge=(from,to,kind)=>{
-      const key=kind==='union'?`u:${[from,to].sort().join('|')}`:`p:${from}|${to}`;
-      if(links.has(key))return;
-      links.add(key);edges.push({from,to,kind});
-    };
-    for(const id of ids){
-      const person=state.byId.get(id);
-      for(const child of person.children)if(found.has(child))addEdge(id,child,'parent');
-      if(includeSpouses)for(const spouse of person.spouses)if(found.has(spouse))addEdge(id,spouse,'union');
-    }
-    const nodes=ids.map(id=>({id,depth:found.get(id),person:state.byId.get(id)}));
-    return {nodes,edges,capped};
-  }
-  function layoutGraph(){
-    const groups=new Map();
-    for(const node of graph.nodes){if(!groups.has(node.depth))groups.set(node.depth,[]);groups.get(node.depth).push(node);}
-    const depths=[...groups.keys()].sort((a,b)=>a-b);
-    graph.positions=new Map();
-    let y=0;
-    for(const depth of depths){
-      const nodes=groups.get(depth);
-      nodes.sort((a,b)=>{
-        if(a.id===state.selected)return -1;
-        if(b.id===state.selected)return 1;
-        return a.person.name.localeCompare(b.person.name,'it');
-      });
-      const cols=Math.min(10,nodes.length);
-      const rows=Math.ceil(nodes.length/cols);
-      nodes.forEach((n,i)=>{
-        const r=Math.floor(i/cols),c=i%cols;
-        const rowLen=Math.min(cols,nodes.length-r*cols);
-        const x=(c-(rowLen-1)/2)*198;
-        graph.positions.set(n.id,{x,y:y+r*102});
-      });
-      y+=Math.max(1,rows)*102+105;
-    }
-    const focus=graph.positions.get(state.selected);
-    if(focus){for(const p of graph.positions.values()){p.x-=focus.x;p.y-=focus.y;}}
-  }
-  function renderGraph(){
-    if(!state.selected)return;
-    const result=constructGraph();
-    graph.nodes=result.nodes;graph.edges=result.edges;graph.capped=result.capped;
-    layoutGraph();paintGraph();centerGraph();
-    $('graphSummary').textContent=`${number(graph.nodes.length)} persone · ${number(graph.edges.length)} legami visualizzati`;
-    $('graphLimitNote').hidden=!graph.capped;
-    if(graph.capped)$('graphLimitNote').textContent='La rete è più estesa del limite selezionato: sono visualizzate le prime '+number(graph.nodes.length)+' persone raggiunte. Aumenta il limite oppure seleziona un nodo per esplorare un altro ramo.';
-  }
-  function paintGraph(){
-    const scene=$('graphScene');scene.replaceChildren();
-    const edges=makeSvg('g',{'class':'graph-edges'});
-    for(const edge of graph.edges){
-      const a=graph.positions.get(edge.from),b=graph.positions.get(edge.to);
-      if(!a||!b)continue;
-      const union=edge.kind==='union';
-      const path=makeSvg('path',{'class':`graph-edge ${union?'graph-edge-union':'graph-edge-parent'}`,
-        d:union?`M${a.x},${a.y} L${b.x},${b.y}`:`M${a.x},${a.y+31} C${a.x},${(a.y+b.y)/2} ${b.x},${(a.y+b.y)/2} ${b.x},${b.y-31}`});
-      edges.appendChild(path);
-    }
-    scene.appendChild(edges);
-    const nodes=makeSvg('g',{'class':'graph-nodes'});
-    for(const item of graph.nodes){
-      const point=graph.positions.get(item.id),person=item.person;
-      const selected=item.id===state.selected;
-      const g=makeSvg('g',{'class':`graph-node${selected?' is-focus':''}`,
-        transform:`translate(${point.x},${point.y})`,'data-graph-person':item.id,
-        'role':'button','tabindex':'0', 'aria-label':`${person.name}, ${briefDate(person)}. Apri il grafo da questa persona`});
-      const title=makeSvg('title');title.textContent=`${person.name} (${briefDate(person)})`;
-      const rect=makeSvg('rect',{x:-85,y:-31,width:170,height:62,rx:8});
-      const dot=makeSvg('circle',{cx:-68,cy:0,r:5,'class':'graph-node-dot'});
-      const name=makeSvg('text',{x:-56,y:-4,'class':'graph-node-name'});
-      const full=person.name||'Senza nome';
-      name.textContent=full.length>26?full.slice(0,25)+'…':full;
-      const years=makeSvg('text',{x:-56,y:16,'class':'graph-node-years'});
-      years.textContent=briefDate(person);
-      g.append(title,rect,dot,name,years);nodes.appendChild(g);
-    }
-    scene.appendChild(nodes);
-    applyGraphTransform();
   }
   function applyGraphTransform(){
     $('graphScene').setAttribute('transform',`translate(${graph.x} ${graph.y}) scale(${graph.k})`);
   }
   function centerGraph(){
-    const focus=graph.positions.get(state.selected);
-    if(!focus)return;
-    graph.k=.95;graph.x=GRAPH_W/2-focus.x*graph.k;graph.y=GRAPH_H/2-focus.y*graph.k;
+    const root=graph.positions.get(graph.root);if(!root)return;
+    graph.k=1.12;graph.x=GRAPH_W/2-root.x*graph.k;graph.y=GRAPH_H/2-root.y*graph.k;
     applyGraphTransform();
   }
   function fitGraph(){
     if(!graph.nodes.length)return;
     const positions=[...graph.positions.values()];
-    const x1=Math.min(...positions.map(p=>p.x))-95,x2=Math.max(...positions.map(p=>p.x))+95;
-    const y1=Math.min(...positions.map(p=>p.y))-65,y2=Math.max(...positions.map(p=>p.y))+65;
-    graph.k=Math.min(2,Math.max(.12,Math.min((GRAPH_W-72)/(x2-x1),(GRAPH_H-72)/(y2-y1))));
+    const x1=Math.min(...positions.map(p=>p.x))-115,x2=Math.max(...positions.map(p=>p.x))+115;
+    const y1=Math.min(...positions.map(p=>p.y))-72,y2=Math.max(...positions.map(p=>p.y))+112;
+    graph.k=Math.min(1.4,Math.max(.1,Math.min((GRAPH_W-70)/(x2-x1),(GRAPH_H-70)/(y2-y1))));
     graph.x=GRAPH_W/2-(x1+x2)/2*graph.k;
     graph.y=GRAPH_H/2-(y1+y2)/2*graph.k;
     applyGraphTransform();
   }
   function zoomGraph(factor,px=GRAPH_W/2,py=GRAPH_H/2){
     if(!graph.nodes.length)return;
-    const newK=Math.max(.12,Math.min(3,graph.k*factor));
-    const realFactor=newK/graph.k;
-    graph.x=px-(px-graph.x)*realFactor;
-    graph.y=py-(py-graph.y)*realFactor;
+    const newK=Math.max(.1,Math.min(3,graph.k*factor));
+    const f=newK/graph.k;
+    graph.x=px-(px-graph.x)*f;graph.y=py-(py-graph.y)*f;
     graph.k=newK;applyGraphTransform();
   }
   function exportGraph(){
     if(!graph.nodes.length)return;
-    const original=$('graphSvg');
-    const clone=original.cloneNode(true);
-    clone.setAttribute('xmlns',GRAPH_NS);
-    clone.setAttribute('width',String(GRAPH_W));clone.setAttribute('height',String(GRAPH_H));
-    const style=document.createElementNS(GRAPH_NS,'style');
-    style.textContent=`.graph-edge{fill:none;stroke:#a8b9ac;stroke-width:1.8}.graph-edge-union{stroke:#b78d57;stroke-width:1.6;stroke-dasharray:6 5}.graph-node rect{fill:#fffefa;stroke:#b7c7ba;stroke-width:1.5}.graph-node.is-focus rect{fill:#e3efe5;stroke:#315b4d;stroke-width:2.4}.graph-node-dot{fill:#8ba996}.graph-node.is-focus .graph-node-dot{fill:#315b4d}.graph-node-name{font-family:Arial,sans-serif;font-size:12px;font-weight:bold;fill:#1b4035}.graph-node-years{font-family:Arial,sans-serif;font-size:10px;fill:#6b8074}`;
-    clone.insertBefore(style,clone.firstChild);
-    const rect=makeSvg('rect',{x:0,y:0,width:GRAPH_W,height:GRAPH_H,fill:'#f6f8f4'});
-    clone.insertBefore(rect,style.nextSibling);
-    const data=new XMLSerializer().serializeToString(clone);
-    const blob=new Blob([data],{type:'image/svg+xml;charset=utf-8'});
-    const url=URL.createObjectURL(blob);
-    const link=document.createElement('a');link.href=url;
-    link.download=`grafo-${slug}-${state.selected.replace(/[^a-z0-9_-]/gi,'')}.svg`;
-    document.body.appendChild(link);link.click();link.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),1500);
+    // L'SVG esportato contiene l'intero grafo attualmente espanso, non solo
+    // la porzione visibile nel riquadro dopo uno zoom.
+    const positions=[...graph.positions.values()];
+    const minX=Math.min(...positions.map(p=>p.x))-140,maxX=Math.max(...positions.map(p=>p.x))+140;
+    const minY=Math.min(...positions.map(p=>p.y))-100,maxY=Math.max(...positions.map(p=>p.y))+135;
+    const clone=makeSvg('svg',{xmlns:GRAPH_NS,viewBox:`${minX} ${minY} ${maxX-minX} ${maxY-minY}`,
+      width:Math.ceil(maxX-minX),height:Math.ceil(maxY-minY)});
+    const style=makeSvg('style');
+    style.textContent=`.graph-edge{fill:none;stroke:#8ba79a;stroke-width:2}.graph-edge-union{stroke:#b2875b;stroke-dasharray:7 6}.graph-edge-sibling{stroke:#97a6ae;stroke-dasharray:2 7}.graph-sex-shape{fill:#fffefa;stroke:#668d7d;stroke-width:2.4}.graph-female .graph-sex-shape{fill:#fbf4e9;stroke:#b6976d}.graph-node.is-focus .graph-sex-shape{stroke:#214d40;stroke-width:3;fill:#dfece3}.graph-node.is-open .graph-sex-shape{stroke-width:3.3}.graph-monogram{font-family:Arial,sans-serif;font-size:22px;font-weight:bold;fill:#234a3e}.graph-expand-mark{font-family:Arial,sans-serif;font-size:24px;font-weight:bold;fill:#477e65}.graph-node-name{font-family:Arial,sans-serif;font-size:13px;font-weight:700;fill:#25463c}.graph-node-years{font-family:Arial,sans-serif;font-size:11px;fill:#64786e}`;
+    const background=makeSvg('rect',{x:minX,y:minY,width:maxX-minX,height:maxY-minY,fill:'#f6f8f4'});
+    const scene=$('graphScene').cloneNode(true);scene.removeAttribute('transform');
+    clone.append(style,background,scene);
+    const blob=new Blob([new XMLSerializer().serializeToString(clone)],{type:'image/svg+xml;charset=utf-8'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;
+    a.download=`grafo-a-click-${slug}-${graph.root.replace(/[^a-z0-9_-]/gi,'')}.svg`;
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
   }
 
   async function copyLink(){

@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/esplora.css?v=1">
-  <link rel="stylesheet" href="assets/grafo.css?v=1">
-  <script defer src="assets/esplora.js?v=4"></script>
+  <link rel="stylesheet" href="assets/grafo.css?v=2">
+  <script defer src="assets/esplora.js?v=5"></script>
 </head>
 <body>
   <a class="skip-link" href="#appMain">Vai ai contenuti</a>
@@ -106,40 +106,35 @@
           </section>
           <section id="panelGraph" class="tab-panel graph-panel" role="tabpanel" aria-labelledby="tabGraph" hidden>
             <div class="panel-heading">
-              <div><h3>Grafo genealogico interattivo</h3><p>Esplora i legami registrati attorno alla persona selezionata. I nodi rappresentano persone; le linee distinguono parentela e unioni familiari.</p></div>
+              <div><h3>Grafo genealogico a clic</h3><p>Parti da una sola persona: clicca sul quadrato (maschio) o sul cerchio (femmina) per mostrare tutte le relazioni dirette note. Clicca sugli altri nodi per sviluppare progressivamente la rete; un secondo clic richiude il ramo.</p></div>
               <button id="graphSave" type="button" class="mini-button">Scarica SVG</button>
             </div>
-            <div class="graph-controls" aria-label="Opzioni del grafo">
-              <label>GENERAZIONI
-                <select id="graphGenerations"><option value="1">1 generazione</option><option value="2" selected>2 generazioni</option><option value="3">3 generazioni</option><option value="4">4 generazioni</option></select>
-              </label>
-              <label>COLLEGAMENTI
-                <select id="graphScope"><option value="both">Antenati e discendenti</option><option value="ancestors">Solo antenati</option><option value="descendants">Solo discendenti</option></select>
-              </label>
-              <label>NUMERO MASSIMO
-                <select id="graphLimit"><option value="60">60 persone</option><option value="120" selected>120 persone</option><option value="200">200 persone</option></select>
-              </label>
-              <label class="graph-check"><input id="graphSpouses" type="checkbox" checked> Mostra coniugi</label>
-            </div>
             <div class="graph-toolbar">
-              <span id="graphSummary" class="graph-summary" aria-live="polite">Seleziona una persona per generare il grafo.</span>
-              <div class="graph-zoom" aria-label="Comandi di zoom e centratura">
+              <span id="graphSummary" class="graph-summary" aria-live="polite">Seleziona una persona per iniziare.</span>
+              <div class="graph-zoom" aria-label="Comandi del grafo">
+                <button id="graphReset" type="button" title="Mostra soltanto la persona di partenza">Ricomincia</button>
                 <button id="graphZoomOut" type="button" aria-label="Riduci ingrandimento" title="Riduci ingrandimento">−</button>
                 <button id="graphZoomIn" type="button" aria-label="Aumenta ingrandimento" title="Aumenta ingrandimento">+</button>
-                <button id="graphFit" type="button" title="Mostra il grafo intero">Adatta</button>
-                <button id="graphCenter" type="button" title="Centra la persona selezionata">Centra persona</button>
+                <button id="graphFit" type="button" title="Mostra la rete attualmente espansa">Adatta</button>
+                <button id="graphCenter" type="button" title="Centra la persona di partenza">Centra persona</button>
               </div>
             </div>
+            <div class="graph-node-info" aria-live="polite">
+              <span id="graphNodeDetails">Clicca sulla persona di partenza per aprire le sue relazioni.</span>
+              <button id="graphOpenProfile" type="button" class="graph-profile-button" disabled>Profilo di partenza</button>
+            </div>
             <div id="graphViewport" class="graph-viewport">
-              <svg id="graphSvg" viewBox="0 0 1100 640" role="img" aria-label="Grafo di relazioni genealogiche; trascina lo sfondo per spostarti, usa la rotellina per lo zoom e seleziona un nodo per cambiare persona.">
+              <svg id="graphSvg" viewBox="0 0 1100 640" role="group" aria-label="Grafo genealogico. Maschio: quadrato; femmina: cerchio. Premi Invio o fai clic sul nodo per espandere o richiudere le relazioni. Trascina per spostare il grafo.">
                 <g id="graphScene"></g>
               </svg>
-              <div class="graph-hint">Trascina per spostarti · Rotellina per ingrandire · Clicca su un nome per esplorarlo</div>
+              <div class="graph-hint">Clic sul nodo: espandi/richiudi · Trascina: sposta · Rotellina: zoom</div>
             </div>
             <div class="graph-legend">
-              <span><i class="graph-key graph-key-parent"></i> Genitore–figlio</span>
-              <span><i class="graph-key graph-key-union"></i> Unione familiare</span>
-              <span><i class="graph-key graph-key-focus"></i> Persona selezionata</span>
+              <span><i class="graph-key graph-key-man"></i> Maschio</span>
+              <span><i class="graph-key graph-key-woman"></i> Femmina</span>
+              <span><i class="graph-key graph-key-parent"></i> Genitori e figli</span>
+              <span><i class="graph-key graph-key-union"></i> Coniugi</span>
+              <span><i class="graph-key graph-key-sibling"></i> Fratelli e sorelle</span>
             </div>
             <p id="graphLimitNote" class="graph-limit-note" hidden></p>
           </section>
