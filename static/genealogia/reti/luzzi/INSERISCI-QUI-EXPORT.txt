@@ -1,0 +1,3 @@
+Inserisci qui tutti i file e le cartelle dell'esportazione Web di MacFamilyTree 11.
+Il file principale dovrà essere denominato index.html, a questo stesso livello.
+Non eliminare o rinominare le altre cartelle generate da MacFamilyTree.
