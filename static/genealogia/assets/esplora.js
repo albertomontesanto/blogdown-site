@@ -7,7 +7,7 @@
   const params = new URLSearchParams(location.search);
   const slug = params.get('comune') || 'cariati';
   if (!/^[a-z0-9-]+$/.test(slug)) return fail('Codice del comune non valido.');
-  const state = {data:null, persons:[], byId:new Map(), families:[], events:new Map(), selected:null, activeTab:'tree', found:[], shown:30, target:null, graph:new Map(), loaded:false};
+  const state = {graphView:null, data:null, persons:[], byId:new Map(), families:[], events:new Map(), selected:null, activeTab:'tree', found:[], shown:30, target:null, graph:new Map(), loaded:false};
   const add = (map,key,value) => {if (!map.has(key)) map.set(key,[]); map.get(key).push(value);};
   const sortedUnique = (arr) => [...new Set(arr)].filter(id => state.byId.has(id)).sort((a,b) => state.byId.get(a).name.localeCompare(state.byId.get(b).name,'it'));
   const briefDate = (p) => (p.birthYear || '—') + ' — ' + (p.deathYear || '—');
@@ -97,6 +97,7 @@
     $('pathResult').addEventListener('click',e=>{const b=e.target.closest('[data-person]');if(b)select(b.dataset.person);});
     $('pathSearch').addEventListener('input',renderPathSuggestions);
     $('resetTree').addEventListener('click',centerTree);
+    setupGraphControls();
     window.addEventListener('popstate',()=>{const id=new URLSearchParams(location.search).get('persona');if(id&&state.byId.has(id))select(id,false);else{state.selected=null;renderLanding();}});
     document.addEventListener('keydown',e=>{if(e.key==='/'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) {e.preventDefault();$('personSearch').focus();}});
     applyFilters();
@@ -133,7 +134,7 @@
     $('moreResults').textContent=`Mostra altre persone (${number(Math.max(0,state.found.length-state.shown))} restanti) ↓`;
   }
   function renderLanding(){$('welcomePanel').hidden=false;$('profilePanel').hidden=true;renderResults();}
-  function select(id,push=true){
+  function select(id,push=true,preferredTab='tree'){
     const p=state.byId.get(id);if(!p)return;
     state.selected=id;state.target=null;
     if(push){const url=new URL(location.href);url.searchParams.set('comune',slug);url.searchParams.set('persona',id);history.pushState({id},'',url);}
@@ -143,18 +144,19 @@
     $('profileLife').textContent=briefDate(p);
     $('profileID').textContent=`ID ${p.id}`;
     $('pathSearch').value='';$('pathSuggestions').replaceChildren();$('pathResult').innerHTML='';
-    setTab('tree');renderResults();
+    setTab(preferredTab);renderResults();
     if(window.matchMedia('(max-width:800px)').matches) $('profilePanel').scrollIntoView({block:'start',behavior:'smooth'});
   }
   function setTab(tab){
     state.activeTab=tab;
-    for(const key of ['tree','relations','path']){
+    for(const key of ['tree','relations','path','graph']){
       $(`panel${key[0].toUpperCase()+key.slice(1)}`).hidden=(key!==tab);
       const b=$(`tab${key[0].toUpperCase()+key.slice(1)}`);b.classList.toggle('active',key===tab);b.setAttribute('aria-selected',String(key===tab));
     }
     if(!state.selected)return;
     if(tab==='tree')renderTree();
     else if(tab==='relations')renderRelations();
+    else if(tab==='graph')renderGraph();
     else if(tab==='path')$('pathResult').innerHTML='<p class="path-prompt">Cerca una seconda persona: verrà ricostruito il percorso minimo attraverso genitori, figli e unioni familiari presenti nell’archivio.</p>';
   }
   function renderTree() {
@@ -282,6 +284,246 @@
     const summary=path.length===1?'La persona coincide con quella selezionata.':`Percorso individuato: ${path.length-1} ${path.length===2?'passaggio':'passaggi'} attraverso le relazioni registrate.`;
     out.innerHTML=`<p class="path-summary">${safe(summary)}</p><div class="path-list">${path.map((step,i)=>`${i?`<div class="path-link">↓ ${safe(step.rel)}</div>`:''}<button type="button" class="path-item" data-person="${safe(step.id)}"><strong>${safe(state.byId.get(step.id).name)}</strong><span>${safe(briefDate(state.byId.get(step.id)))}</span></button>`).join('')}</div>`;
   }
+  // Grafo genealogico: costruito dai collegamenti indicizzati dall'archivio completo.
+  // La visualizzazione è intenzionalmente locale alla persona selezionata:
+  // anche con oltre 30.000 profili il browser non deve disegnare l'intero database.
+  const GRAPH_NS = 'http://www.w3.org/2000/svg';
+  const GRAPH_W = 1100, GRAPH_H = 640;
+  const graph = {nodes:[], edges:[], positions:new Map(), x:0, y:0, k:1, dragging:null, moved:false, suppress:false, capped:false};
+  const makeSvg = (tag,attributes={}) => {
+    const el=document.createElementNS(GRAPH_NS,tag);
+    for(const [k,v] of Object.entries(attributes))el.setAttribute(k,String(v));
+    return el;
+  };
+  const graphSort = ids=>sortedUnique(ids);
+  function setupGraphControls(){
+    ['graphGenerations','graphScope','graphLimit','graphSpouses'].forEach(id=>$(id).addEventListener('change',()=>{
+      if(state.selected&&state.activeTab==='graph')renderGraph();
+    }));
+    $('graphZoomIn').addEventListener('click',()=>zoomGraph(1.28));
+    $('graphZoomOut').addEventListener('click',()=>zoomGraph(1/1.28));
+    $('graphFit').addEventListener('click',()=>fitGraph());
+    $('graphCenter').addEventListener('click',()=>centerGraph());
+    $('graphSave').addEventListener('click',exportGraph);
+    const svg=$('graphSvg');
+    svg.addEventListener('wheel',e=>{
+      if(state.activeTab!=='graph')return;
+      e.preventDefault();
+      const bounds=svg.getBoundingClientRect();
+      const sx=(e.clientX-bounds.left)*GRAPH_W/bounds.width;
+      const sy=(e.clientY-bounds.top)*GRAPH_H/bounds.height;
+      zoomGraph(e.deltaY<0?1.1:1/1.1,sx,sy);
+    },{passive:false});
+    svg.addEventListener('pointerdown',e=>{
+      if(e.button!==0)return;
+      const node=e.target.closest('[data-graph-person]');
+      graph.dragging={pointer:e.pointerId,id:node?node.getAttribute('data-graph-person'):null,
+        startX:e.clientX,startY:e.clientY,lastX:e.clientX,lastY:e.clientY};
+      graph.moved=false;
+      svg.setPointerCapture(e.pointerId);
+      $('graphViewport').classList.add('is-panning');
+    });
+    svg.addEventListener('pointermove',e=>{
+      const drag=graph.dragging;if(!drag||drag.pointer!==e.pointerId)return;
+      const rect=svg.getBoundingClientRect();
+      const dx=(e.clientX-drag.lastX)*GRAPH_W/rect.width;
+      const dy=(e.clientY-drag.lastY)*GRAPH_H/rect.height;
+      drag.lastX=e.clientX;drag.lastY=e.clientY;
+      if(Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)>5)graph.moved=true;
+      if(!graph.moved)return;
+      if(drag.id){
+        const pos=graph.positions.get(drag.id);
+        if(pos){pos.x+=dx/graph.k;pos.y+=dy/graph.k;paintGraph();}
+      } else {graph.x+=dx;graph.y+=dy;applyGraphTransform();}
+    });
+    const finish=e=>{
+      if(!graph.dragging||graph.dragging.pointer!==e.pointerId)return;
+      const clicked=!graph.moved?graph.dragging.id:null;
+      graph.dragging=null;$('graphViewport').classList.remove('is-panning');
+      if(svg.hasPointerCapture(e.pointerId))svg.releasePointerCapture(e.pointerId);
+      // Con la pointer capture il click può essere indirizzato all'SVG:
+      // apriamo direttamente la scheda dalla pointerup per non perdere il nodo.
+      if(graph.moved||clicked){graph.suppress=true;setTimeout(()=>{graph.suppress=false;},0);}
+      if(clicked)select(clicked,true,'graph');
+    };
+    svg.addEventListener('pointerup',finish);
+    svg.addEventListener('pointercancel',finish);
+    svg.addEventListener('click',e=>{
+      if(graph.suppress||graph.moved)return;
+      const node=e.target.closest('[data-graph-person]');
+      if(node)select(node.getAttribute('data-graph-person'),true,'graph');
+    });
+    svg.addEventListener('keydown',e=>{
+      if(e.key!=='Enter'&&e.key!==' ')return;
+      const node=e.target.closest('[data-graph-person]');
+      if(!node)return;
+      e.preventDefault();select(node.getAttribute('data-graph-person'),true,'graph');
+    });
+  }
+  function constructGraph(){
+    const start=state.selected;
+    const generations=Number($('graphGenerations').value)||2;
+    const scope=$('graphScope').value;
+    const max=Math.min(200,Number($('graphLimit').value)||120);
+    const includeSpouses=$('graphSpouses').checked;
+    const found=new Map([[start,0]]),queue=[start];
+    let capped=false;
+    for(let i=0;i<queue.length;i++){
+      const id=queue[i],depth=found.get(id),person=state.byId.get(id);
+      if(!person)continue;
+      let next=[];
+      if(scope!=='descendants'&&depth>-generations)
+        next.push(...graphSort([...person.parents]).map(x=>({id:x,depth:depth-1})));
+      if(scope!=='ancestors'&&depth<generations)
+        next.push(...graphSort([...person.children]).map(x=>({id:x,depth:depth+1})));
+      for(const relation of next){
+        if(found.has(relation.id))continue;
+        if(found.size>=max){capped=true;continue;}
+        found.set(relation.id,relation.depth);queue.push(relation.id);
+      }
+    }
+    // I coniugi si aggiungono alla generazione del rispettivo partner senza
+    // far ripartire l'espansione da loro: questo contiene l'esplosione del grafo.
+    if(includeSpouses){
+      const base=[...found.keys()];
+      for(const id of base){
+        const person=state.byId.get(id);
+        for(const spouse of graphSort([...person.spouses])){
+          if(found.has(spouse))continue;
+          if(found.size>=max){capped=true;continue;}
+          found.set(spouse,found.get(id));
+        }
+      }
+    }
+    const ids=[...found.keys()];
+    const edges=[],links=new Set();
+    const addEdge=(from,to,kind)=>{
+      const key=kind==='union'?`u:${[from,to].sort().join('|')}`:`p:${from}|${to}`;
+      if(links.has(key))return;
+      links.add(key);edges.push({from,to,kind});
+    };
+    for(const id of ids){
+      const person=state.byId.get(id);
+      for(const child of person.children)if(found.has(child))addEdge(id,child,'parent');
+      if(includeSpouses)for(const spouse of person.spouses)if(found.has(spouse))addEdge(id,spouse,'union');
+    }
+    const nodes=ids.map(id=>({id,depth:found.get(id),person:state.byId.get(id)}));
+    return {nodes,edges,capped};
+  }
+  function layoutGraph(){
+    const groups=new Map();
+    for(const node of graph.nodes){if(!groups.has(node.depth))groups.set(node.depth,[]);groups.get(node.depth).push(node);}
+    const depths=[...groups.keys()].sort((a,b)=>a-b);
+    graph.positions=new Map();
+    let y=0;
+    for(const depth of depths){
+      const nodes=groups.get(depth);
+      nodes.sort((a,b)=>{
+        if(a.id===state.selected)return -1;
+        if(b.id===state.selected)return 1;
+        return a.person.name.localeCompare(b.person.name,'it');
+      });
+      const cols=Math.min(10,nodes.length);
+      const rows=Math.ceil(nodes.length/cols);
+      nodes.forEach((n,i)=>{
+        const r=Math.floor(i/cols),c=i%cols;
+        const rowLen=Math.min(cols,nodes.length-r*cols);
+        const x=(c-(rowLen-1)/2)*198;
+        graph.positions.set(n.id,{x,y:y+r*102});
+      });
+      y+=Math.max(1,rows)*102+105;
+    }
+    const focus=graph.positions.get(state.selected);
+    if(focus){for(const p of graph.positions.values()){p.x-=focus.x;p.y-=focus.y;}}
+  }
+  function renderGraph(){
+    if(!state.selected)return;
+    const result=constructGraph();
+    graph.nodes=result.nodes;graph.edges=result.edges;graph.capped=result.capped;
+    layoutGraph();paintGraph();centerGraph();
+    $('graphSummary').textContent=`${number(graph.nodes.length)} persone · ${number(graph.edges.length)} legami visualizzati`;
+    $('graphLimitNote').hidden=!graph.capped;
+    if(graph.capped)$('graphLimitNote').textContent='La rete è più estesa del limite selezionato: sono visualizzate le prime '+number(graph.nodes.length)+' persone raggiunte. Aumenta il limite oppure seleziona un nodo per esplorare un altro ramo.';
+  }
+  function paintGraph(){
+    const scene=$('graphScene');scene.replaceChildren();
+    const edges=makeSvg('g',{'class':'graph-edges'});
+    for(const edge of graph.edges){
+      const a=graph.positions.get(edge.from),b=graph.positions.get(edge.to);
+      if(!a||!b)continue;
+      const union=edge.kind==='union';
+      const path=makeSvg('path',{'class':`graph-edge ${union?'graph-edge-union':'graph-edge-parent'}`,
+        d:union?`M${a.x},${a.y} L${b.x},${b.y}`:`M${a.x},${a.y+31} C${a.x},${(a.y+b.y)/2} ${b.x},${(a.y+b.y)/2} ${b.x},${b.y-31}`});
+      edges.appendChild(path);
+    }
+    scene.appendChild(edges);
+    const nodes=makeSvg('g',{'class':'graph-nodes'});
+    for(const item of graph.nodes){
+      const point=graph.positions.get(item.id),person=item.person;
+      const selected=item.id===state.selected;
+      const g=makeSvg('g',{'class':`graph-node${selected?' is-focus':''}`,
+        transform:`translate(${point.x},${point.y})`,'data-graph-person':item.id,
+        'role':'button','tabindex':'0', 'aria-label':`${person.name}, ${briefDate(person)}. Apri il grafo da questa persona`});
+      const title=makeSvg('title');title.textContent=`${person.name} (${briefDate(person)})`;
+      const rect=makeSvg('rect',{x:-85,y:-31,width:170,height:62,rx:8});
+      const dot=makeSvg('circle',{cx:-68,cy:0,r:5,'class':'graph-node-dot'});
+      const name=makeSvg('text',{x:-56,y:-4,'class':'graph-node-name'});
+      const full=person.name||'Senza nome';
+      name.textContent=full.length>26?full.slice(0,25)+'…':full;
+      const years=makeSvg('text',{x:-56,y:16,'class':'graph-node-years'});
+      years.textContent=briefDate(person);
+      g.append(title,rect,dot,name,years);nodes.appendChild(g);
+    }
+    scene.appendChild(nodes);
+    applyGraphTransform();
+  }
+  function applyGraphTransform(){
+    $('graphScene').setAttribute('transform',`translate(${graph.x} ${graph.y}) scale(${graph.k})`);
+  }
+  function centerGraph(){
+    const focus=graph.positions.get(state.selected);
+    if(!focus)return;
+    graph.k=.95;graph.x=GRAPH_W/2-focus.x*graph.k;graph.y=GRAPH_H/2-focus.y*graph.k;
+    applyGraphTransform();
+  }
+  function fitGraph(){
+    if(!graph.nodes.length)return;
+    const positions=[...graph.positions.values()];
+    const x1=Math.min(...positions.map(p=>p.x))-95,x2=Math.max(...positions.map(p=>p.x))+95;
+    const y1=Math.min(...positions.map(p=>p.y))-65,y2=Math.max(...positions.map(p=>p.y))+65;
+    graph.k=Math.min(2,Math.max(.12,Math.min((GRAPH_W-72)/(x2-x1),(GRAPH_H-72)/(y2-y1))));
+    graph.x=GRAPH_W/2-(x1+x2)/2*graph.k;
+    graph.y=GRAPH_H/2-(y1+y2)/2*graph.k;
+    applyGraphTransform();
+  }
+  function zoomGraph(factor,px=GRAPH_W/2,py=GRAPH_H/2){
+    if(!graph.nodes.length)return;
+    const newK=Math.max(.12,Math.min(3,graph.k*factor));
+    const realFactor=newK/graph.k;
+    graph.x=px-(px-graph.x)*realFactor;
+    graph.y=py-(py-graph.y)*realFactor;
+    graph.k=newK;applyGraphTransform();
+  }
+  function exportGraph(){
+    if(!graph.nodes.length)return;
+    const original=$('graphSvg');
+    const clone=original.cloneNode(true);
+    clone.setAttribute('xmlns',GRAPH_NS);
+    clone.setAttribute('width',String(GRAPH_W));clone.setAttribute('height',String(GRAPH_H));
+    const style=document.createElementNS(GRAPH_NS,'style');
+    style.textContent=`.graph-edge{fill:none;stroke:#a8b9ac;stroke-width:1.8}.graph-edge-union{stroke:#b78d57;stroke-width:1.6;stroke-dasharray:6 5}.graph-node rect{fill:#fffefa;stroke:#b7c7ba;stroke-width:1.5}.graph-node.is-focus rect{fill:#e3efe5;stroke:#315b4d;stroke-width:2.4}.graph-node-dot{fill:#8ba996}.graph-node.is-focus .graph-node-dot{fill:#315b4d}.graph-node-name{font-family:Arial,sans-serif;font-size:12px;font-weight:bold;fill:#1b4035}.graph-node-years{font-family:Arial,sans-serif;font-size:10px;fill:#6b8074}`;
+    clone.insertBefore(style,clone.firstChild);
+    const rect=makeSvg('rect',{x:0,y:0,width:GRAPH_W,height:GRAPH_H,fill:'#f6f8f4'});
+    clone.insertBefore(rect,style.nextSibling);
+    const data=new XMLSerializer().serializeToString(clone);
+    const blob=new Blob([data],{type:'image/svg+xml;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const link=document.createElement('a');link.href=url;
+    link.download=`grafo-${slug}-${state.selected.replace(/[^a-z0-9_-]/gi,'')}.svg`;
+    document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }
+
   async function copyLink(){
     try{await navigator.clipboard.writeText(location.href);$('copyProfile').textContent='Link copiato ✓';setTimeout(()=>$('copyProfile').textContent='Copia link',1800);}
     catch{$('copyProfile').textContent='Copia dalla barra indirizzi';setTimeout(()=>$('copyProfile').textContent='Copia link',2600);}

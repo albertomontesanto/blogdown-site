@@ -10,7 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/esplora.css?v=1">
-  <script defer src="assets/esplora.js?v=2"></script>
+  <link rel="stylesheet" href="assets/grafo.css?v=1">
+  <script defer src="assets/esplora.js?v=4"></script>
 </head>
 <body>
   <a class="skip-link" href="#appMain">Vai ai contenuti</a>
@@ -84,6 +85,7 @@
             <button id="tabTree" class="tab active" type="button" role="tab" aria-selected="true" data-tab="tree">Albero genealogico</button>
             <button id="tabRelations" class="tab" type="button" role="tab" aria-selected="false" data-tab="relations">Relazioni e date</button>
             <button id="tabPath" class="tab" type="button" role="tab" aria-selected="false" data-tab="path">Trova collegamento</button>
+            <button id="tabGraph" class="tab" type="button" role="tab" aria-selected="false" data-tab="graph">Visualizzazione</button>
           </div>
           <section id="panelTree" class="tab-panel" role="tabpanel" aria-labelledby="tabTree">
             <div class="panel-heading"><div><h3>Albero familiare</h3><p>Fino a due generazioni prima e dopo la persona selezionata. Clicca su un nodo per proseguire.</p></div><button id="resetTree" type="button" class="mini-button">Centra la vista</button></div>
@@ -101,6 +103,45 @@
             <div class="search-field path-field"><svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5" stroke-linecap="round"/></svg><input id="pathSearch" type="search" autocomplete="off" placeholder="Cerca nome o cognome..."></div>
             <div id="pathSuggestions" class="path-suggestions"></div>
             <div id="pathResult" class="path-result" aria-live="polite"></div>
+          </section>
+          <section id="panelGraph" class="tab-panel graph-panel" role="tabpanel" aria-labelledby="tabGraph" hidden>
+            <div class="panel-heading">
+              <div><h3>Grafo genealogico interattivo</h3><p>Esplora i legami registrati attorno alla persona selezionata. I nodi rappresentano persone; le linee distinguono parentela e unioni familiari.</p></div>
+              <button id="graphSave" type="button" class="mini-button">Scarica SVG</button>
+            </div>
+            <div class="graph-controls" aria-label="Opzioni del grafo">
+              <label>GENERAZIONI
+                <select id="graphGenerations"><option value="1">1 generazione</option><option value="2" selected>2 generazioni</option><option value="3">3 generazioni</option><option value="4">4 generazioni</option></select>
+              </label>
+              <label>COLLEGAMENTI
+                <select id="graphScope"><option value="both">Antenati e discendenti</option><option value="ancestors">Solo antenati</option><option value="descendants">Solo discendenti</option></select>
+              </label>
+              <label>NUMERO MASSIMO
+                <select id="graphLimit"><option value="60">60 persone</option><option value="120" selected>120 persone</option><option value="200">200 persone</option></select>
+              </label>
+              <label class="graph-check"><input id="graphSpouses" type="checkbox" checked> Mostra coniugi</label>
+            </div>
+            <div class="graph-toolbar">
+              <span id="graphSummary" class="graph-summary" aria-live="polite">Seleziona una persona per generare il grafo.</span>
+              <div class="graph-zoom" aria-label="Comandi di zoom e centratura">
+                <button id="graphZoomOut" type="button" aria-label="Riduci ingrandimento" title="Riduci ingrandimento">−</button>
+                <button id="graphZoomIn" type="button" aria-label="Aumenta ingrandimento" title="Aumenta ingrandimento">+</button>
+                <button id="graphFit" type="button" title="Mostra il grafo intero">Adatta</button>
+                <button id="graphCenter" type="button" title="Centra la persona selezionata">Centra persona</button>
+              </div>
+            </div>
+            <div id="graphViewport" class="graph-viewport">
+              <svg id="graphSvg" viewBox="0 0 1100 640" role="img" aria-label="Grafo di relazioni genealogiche; trascina lo sfondo per spostarti, usa la rotellina per lo zoom e seleziona un nodo per cambiare persona.">
+                <g id="graphScene"></g>
+              </svg>
+              <div class="graph-hint">Trascina per spostarti · Rotellina per ingrandire · Clicca su un nome per esplorarlo</div>
+            </div>
+            <div class="graph-legend">
+              <span><i class="graph-key graph-key-parent"></i> Genitore–figlio</span>
+              <span><i class="graph-key graph-key-union"></i> Unione familiare</span>
+              <span><i class="graph-key graph-key-focus"></i> Persona selezionata</span>
+            </div>
+            <p id="graphLimitNote" class="graph-limit-note" hidden></p>
           </section>
         </div>
       </section>

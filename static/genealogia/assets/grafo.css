@@ -1,0 +1,36 @@
+/* Radici di Calabria – grafo genealogico; stile archivistico coerente con il portale. */
+.graph-panel{min-width:0}
+.graph-controls{display:grid;grid-template-columns:repeat(3,minmax(125px,1fr)) auto;align-items:end;gap:12px;margin:6px 0 16px}
+.graph-controls label{display:flex;flex-direction:column;gap:7px;color:var(--muted);font-size:10px;letter-spacing:.85px;font-weight:700}
+.graph-controls select{width:100%;border:1px solid var(--line2);background:#fffefa;border-radius:5px;padding:11px 9px;color:var(--ink);font-size:12px;letter-spacing:normal;font-weight:600;min-width:0}
+.graph-controls .graph-check{display:flex;flex-direction:row;align-items:center;gap:8px;min-height:42px;padding:0 6px 1px;white-space:nowrap;letter-spacing:0;font-size:12px;color:var(--ink2)}
+.graph-check input{accent-color:#315b4d;width:16px;height:16px;flex:none}
+.graph-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.graph-summary{font-size:12px;color:var(--muted)}
+.graph-zoom{display:flex;align-items:center;gap:5px}
+.graph-zoom button{min-height:33px;border:1px solid var(--line2);background:#fffefa;border-radius:4px;padding:6px 10px;color:var(--ink2);font-weight:700;font-size:12px;white-space:nowrap}
+.graph-zoom button:hover{background:#eaf1e9;border-color:#b3c9b6}
+.graph-zoom button:nth-child(-n+2){min-width:33px;font-size:16px}
+.graph-viewport{position:relative;overflow:hidden;height:610px;background:#f6f8f4;border:1px solid var(--line);border-radius:6px;touch-action:none;cursor:grab;user-select:none}
+.graph-viewport.is-panning{cursor:grabbing}
+.graph-viewport svg{display:block;width:100%;height:100%;touch-action:none}
+.graph-edge{fill:none;stroke:#a8b9ac;stroke-width:1.8;vector-effect:non-scaling-stroke;pointer-events:none}
+.graph-edge-union{stroke:#b78d57;stroke-width:1.6;stroke-dasharray:6 5}
+.graph-node{cursor:pointer;outline:none}
+.graph-node rect{fill:#fffefa;stroke:#b7c7ba;stroke-width:1.5;filter:drop-shadow(0px 2px 3px rgba(24,56,47,.08));transition:fill .14s,stroke .14s}
+.graph-node:hover rect,.graph-node:focus rect{fill:#eaf2e9;stroke:#608a71;stroke-width:2.5}
+.graph-node.is-focus rect{fill:#e3efe5;stroke:#315b4d;stroke-width:2.4}
+.graph-node:focus-visible rect{stroke:#aa7840;stroke-width:3}
+.graph-node-dot{fill:#8ba996;pointer-events:none}
+.graph-node.is-focus .graph-node-dot{fill:#315b4d}
+.graph-node-name{fill:#1b4035;font-family:var(--sans);font-size:12px;font-weight:700;pointer-events:none}
+.graph-node-years{fill:#6b8074;font-family:var(--sans);font-size:10px;pointer-events:none}
+.graph-hint{position:absolute;left:12px;bottom:10px;padding:8px 10px;background:rgba(255,254,250,.93);border:1px solid var(--line);border-radius:4px;font-size:10px;color:#577365;pointer-events:none}
+.graph-legend{display:flex;align-items:center;flex-wrap:wrap;gap:18px;padding:13px 1px;color:var(--muted);font-size:11px}
+.graph-key{display:inline-block;width:22px;height:0;border-top:2px solid #a8b9ac;vertical-align:middle;margin-right:5px}
+.graph-key-union{border-top-color:#b78d57;border-top-style:dashed}
+.graph-key-focus{height:10px;width:12px;background:#e3efe5;border:2px solid #315b4d;border-radius:2px}
+.graph-limit-note{color:#806039;background:#f8f1e5;border-left:3px solid #bb935e;font-size:12px;line-height:1.6;padding:11px 14px;margin-top:4px}
+@media(max-width:1160px){.graph-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.graph-controls .graph-check{align-items:center}.graph-viewport{height:540px}}
+@media(max-width:560px){.graph-controls{grid-template-columns:1fr 1fr;gap:10px}.graph-controls select{font-size:11px;padding:10px 7px}.graph-controls label{font-size:9px}.graph-viewport{height:500px}.graph-hint{font-size:9px;right:12px}.graph-toolbar{align-items:flex-start}.graph-zoom{width:100%;flex-wrap:wrap}.graph-legend{gap:11px}}
+@media(prefers-reduced-motion:reduce){.graph-node rect{transition:none}}
