@@ -3,7 +3,7 @@
    Le voci con archivioPersonalizzato=true aprono il visualizzatore GEDCOM.
    Puoi usare url: 'https://...' per puntare a una rete ospitata altrove. */
 window.RADICI_COMUNI = [
-  {
+    {
     slug: "oriolo", nome: "Oriolo", provincia: "Cosenza", sigla: "CS",
     descrizione: "Persone, famiglie e legami di parentela della rete genealogica di Oriolo.",
     periodo: "1713–1910", persone: 36578, famiglie: 11062, eventi: 39026,
@@ -21,16 +21,23 @@ window.RADICI_COMUNI = [
     periodo: "1809–2014", persone: 5480, famiglie: 1588, eventi: 5488,
     url: "", ready: true, archivioPersonalizzato: true, cover: "terra"
   },
-  {
+{
     slug: 'cariati', nome: 'Cariati', provincia: 'Cosenza', sigla: 'CS',
     descrizione: 'La memoria genealogica di Cariati: persone, famiglie e relazioni tra generazioni.',
     periodo: "1720–2025", persone: 28888, famiglie: 9394, eventi: 29184, url: '', ready: true, cover: 'verde',
     archivioPersonalizzato: true
   },
   {
-    slug: 'pedace', nome: 'Pedace', provincia: 'Cosenza', sigla: 'CS',
-    descrizione: 'Un percorso tra nuclei familiari, generazioni e documenti d’archivio.',
-    periodo: '', persone: null, url: '', cover: 'terra'
+    slug: 'casali-del-manco', nome: 'Casali del Manco', provincia: 'Cosenza', sigla: 'CS',
+    descrizione: 'Archivio genealogico in preparazione. La rete sarà disponibile prossimamente.',
+    periodo: '', persone: null, famiglie: null, eventi: null,
+    url: '', ready: false, archivioPersonalizzato: false, cover: 'terra'
+  },
+  {
+    slug: 'alessandria-del-carretto', nome: 'Alessandria del Carretto', provincia: 'Cosenza', sigla: 'CS',
+    descrizione: 'Archivio genealogico in preparazione. La rete sarà disponibile prossimamente.',
+    periodo: '', persone: null, famiglie: null, eventi: null,
+    url: '', ready: false, archivioPersonalizzato: false, cover: 'verde'
   },
   {
     slug: 'montegiordano', nome: "Montegiordano", provincia: "Cosenza", sigla: "CS",
