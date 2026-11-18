@@ -11,6 +11,10 @@ main:
   - name: Teaching
     url: /courses/
     weight: 30
+    
+  - name: Genealogy
+    url: /genealogia/
+    weight: 40
 
   - name: Projects
     url: /project/
