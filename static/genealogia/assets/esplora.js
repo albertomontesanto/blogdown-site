@@ -72,10 +72,13 @@
     $('statFamilies').textContent=number(d.totaliPubblici.famiglie);
     $('statEvents').textContent=number(d.totaliPubblici.eventi ?? d.totaliOriginali.eventi);
     $('privacySummary').textContent=d.archivioCompleto?
-      'Questa versione include tutti i profili, tutte le famiglie e tutti gli eventi presenti nel GEDCOM aggiornato, anche quando le date non sono note.':
-      `Profili con morte registrata o nascita entro il ${d.cutoffNascita}. Alcuni profili e collegamenti non sono pubblicati in questa vista.`;
+      `Sono consultabili tutti i profili, le famiglie e gli eventi contenuti nell'archivio di ${d.comune}. Origine: ${d.sorgente || 'GEDCOM'}.`:
+      `Profili con morte registrata o nascita entro il ${d.cutoffNascita}. Alcuni profili e collegamenti non sono pubblicati.`;
     const legacy=`rete.html?comune=${encodeURIComponent(slug)}`;
     $('legacyLink').href=legacy; $('originalBottom').href=legacy;
+    const legacyAvailable = slug === 'cariati';
+    $('legacyLink').style.display = legacyAvailable ? '' : 'none';
+    $('originalBottom').style.display = legacyAvailable ? '' : 'none';
     const surnames=new Map();
     state.persons.forEach(p=>{if (p.surname && !/^(nn|n\.n\.|sconosciut[oa])$/i.test(p.surname)) surnames.set(p.surname,(surnames.get(p.surname)||0)+1);});
     [...surnames].sort((a,b)=>b[1]-a[1]).slice(0,7).forEach(([name])=>{
