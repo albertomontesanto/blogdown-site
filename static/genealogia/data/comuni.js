@@ -61,5 +61,29 @@ window.RADICI_COMUNI = [
     eventi: 52601,
     ready: true,
     archivioPersonalizzato: true
+  },
+  {
+    slug: 'cerisano', nome: 'Cerisano', provincia: 'Cosenza', sigla: 'CS',
+    descrizione: 'Archivio genealogico in preparazione. La rete sarà disponibile prossimamente.',
+    periodo: '', persone: null, famiglie: null, eventi: null,
+    url: '', ready: false, archivioPersonalizzato: false, cover: 'verde'
+  },
+  {
+    slug: 'rende', nome: 'Rende', provincia: 'Cosenza', sigla: 'CS',
+    descrizione: 'Archivio genealogico in preparazione. La rete sarà disponibile prossimamente.',
+    periodo: '', persone: null, famiglie: null, eventi: null,
+    url: '', ready: false, archivioPersonalizzato: false, cover: 'terra'
+  },
+  {
+    slug: 'santa-severina', nome: 'Santa Severina', provincia: 'Crotone', sigla: 'KR',
+    descrizione: 'Archivio genealogico in preparazione. La rete sarà disponibile prossimamente.',
+    periodo: '', persone: null, famiglie: null, eventi: null,
+    url: '', ready: false, archivioPersonalizzato: false, cover: 'ocra'
+  },
+  {
+    slug: 'sersale', nome: 'Sersale', provincia: 'Catanzaro', sigla: 'CZ',
+    descrizione: 'Archivio genealogico in preparazione. La rete sarà disponibile prossimamente.',
+    periodo: '', persone: null, famiglie: null, eventi: null,
+    url: '', ready: false, archivioPersonalizzato: false, cover: 'blu'
   }
 ];
