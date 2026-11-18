@@ -1323,3 +1323,172 @@ a.active {
         font-size: 1em;
     }
 }
+
+
+/* ==============================================================
+   RADICI DI CALABRIA — RESTYLING NON DISTRUTTIVO (2026-11-18)
+   Sovrascrive soltanto la presentazione di MacFamilyTree 11.
+   Il database e il bundle JavaScript non vengono modificati.
+   ============================================================== */
+:root {
+    --highlight-color-1: #f5f6f2;
+    --highlight-color-2: #ffffff;
+    --highlight-color-3: #2c6a51;
+    --highlight-color-4: #ffffff;
+    --menu-color: #204638;
+    --section-header-color: #2d624d;
+    --title-color: #173c32;
+    --label-color: #64806e;
+    --text-color: #263f34;
+    --link-color: #23684d;
+    --active-link-color: #173c32;
+    --menu-font: 600 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --section-header-font: 600 15px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --text-font: normal 14px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --introduction-font: normal 15px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --title-font: 700 15px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --shadow: 0 6px 22px rgba(19, 54, 39, .055);
+    --page-layout-sections-gap: 17px;
+}
+.layout-container {
+    background: #f5f6f2;
+}
+.layout-header {
+    background-image: none !important;
+    background-color: #ecf1e9 !important;
+    border-bottom: 1px solid #dce5dc;
+}
+.layout-header-additional-sections-from-page {
+    max-width: 1100px;
+    padding: 14px 24px;
+    color: #173c32 !important;
+}
+.layout-header-additional-sections-from-page .page-header-section,
+.layout-header-additional-sections-from-page .page-header-section canvas {
+    color: #173c32 !important;
+}
+.layout-menu {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px 20px;
+    background: #fff;
+    border-bottom: 1px solid #dfe7dd;
+    box-shadow: none;
+    column-gap: 18px;
+}
+.layout-menu.is-sticky {
+    box-shadow: 0 4px 16px rgba(19, 54, 39, .07);
+}
+.website-menu-and-config-container {
+    max-width: 1150px;
+    padding: 0;
+    column-gap: 20px;
+}
+.website-header-title {
+    color: #173c32;
+    font-size: 14px;
+    letter-spacing: -.15px;
+}
+.website-header { min-width: 0; }
+.main-menu-container { column-gap: 15px; }
+.main-menu-item a {
+    color: #315548;
+    text-decoration: none;
+    transition: color .15s ease;
+}
+.main-menu-item a:hover,
+.main-menu-item a.active { color: #14704a; }
+.main-menu-item a.active {
+    text-decoration: underline;
+    text-decoration-color: #b58b51;
+    text-underline-offset: 7px;
+    text-decoration-thickness: 2px;
+}
+.main-burger-menu-container {
+    border: 1px solid #dfe7dd;
+    border-radius: 9px;
+}
+.config-button { opacity: .72; }
+.config-button:hover { opacity: 1; }
+.layout-content {
+    box-sizing: border-box;
+    padding: 25px 22px 34px;
+}
+.page-container { max-width: 1100px; }
+.page-section {
+    background: #fff;
+    border: 1px solid #e1e7df;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+.page-section-header {
+    padding: 15px 18px 8px;
+    margin-right: 0;
+}
+.page-section-content { padding: 12px 16px 18px; }
+.page-header-section-title { font-size: 18px; }
+.page-layout-header { margin: 14px 0; }
+
+/* Home: una presentazione compatta al posto di banner e crediti isolati. */
+.layout-content:has(.home-page-introduction-section) {
+    align-items: center;
+    padding: clamp(28px, 6vh, 58px) 18px 32px;
+}
+.layout-content:has(.home-page-introduction-section) .page-container {
+    max-width: 930px;
+}
+.page-section:has(.home-page-introduction-section) {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+.page-section:has(.home-page-introduction-section) .page-section-content { padding: 0; }
+.home-page-introduction-section {
+    box-sizing: border-box;
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 12px 22px 22px;
+    text-align: center;
+    line-height: 1.8;
+    color: #576f60;
+    white-space: pre-wrap;
+}
+.home-page-introduction-section::before {
+    content: 'La memoria delle famiglie';
+    display: block;
+    margin: 0 0 12px;
+    font: normal clamp(29px, 3vw, 40px)/1.16 Georgia, 'Times New Roman', serif;
+    letter-spacing: -.9px;
+    color: #173c32;
+}
+.home-page-introduction-section::after {
+    content: 'Ricerca persone · Esplora famiglie · Consulta statistiche';
+    display: block;
+    margin: 25px auto 0;
+    padding-top: 18px;
+    max-width: 550px;
+    border-top: 1px solid #d7e0d5;
+    font: 600 11px/1.8 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #3c765b;
+}
+/* Se la configurazione precedente viene ripristinata, anche i duplicati restano discreti. */
+.home-page-title-section, .home-page-image-section,
+.home-page-creation-date-section,
+.home-page-created-with-macfamilytree-section { display: none !important; }
+
+@media (max-width: 700px) {
+    .layout-menu { padding: 11px 13px; column-gap: 9px; }
+    .website-menu-and-config-container { column-gap: 8px; }
+    .website-header-title { font-size: 12px; }
+    .main-menu-container { column-gap: 9px; }
+    .layout-content { padding: 16px 10px 24px; }
+    .page-section { border-radius: 9px; }
+    .page-section-content { padding: 10px 9px 14px; }
+    .home-page-introduction-section { padding: 12px 8px 24px; }
+    .home-page-introduction-section::after { font-size: 10px; letter-spacing: .3px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .main-menu-item a { transition: none; }
+}
